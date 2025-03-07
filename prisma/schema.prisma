@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model KYCForm {
+  id             String    @id @default(uuid())
+  contractNumber String
+  fullName       String
+  firstName      String
+  lastName       String
+  gender         String
+  usageType      String
+  dateOfBirth    DateTime?
+
+  // Identity document
+  idType         String
+  idNumber       String
+  idValidityDate DateTime?
+
+  // NIU
+  niuNumber String?
+
+  // Contact information
+  email          String
+  customerStatus String?
+
+  // Location
+  locationReference String?
+  gpsCoordinates    String?
+
+  // Meter details
+  meterNumber          String?
+  meterCharacteristics String?
+  meterType            String
+  itineraryNumber      String?
+  transformerPower     String?
+  voltage              String?
+  meterStatus          String
+  activity             String?
+
+  // Related models
+  otherContracts OtherContract[]
+  phoneNumbers   PhoneNumber[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OtherContract {
+  id        String  @id @default(uuid())
+  number    String
+  kycFormId String
+  kycForm   KYCForm @relation(fields: [kycFormId], references: [id], onDelete: Cascade)
+}
+
+model PhoneNumber {
+  id         String  @id @default(uuid())
+  number     String
+  isWhatsapp Boolean @default(false)
+  kycFormId  String
+  kycForm    KYCForm @relation(fields: [kycFormId], references: [id], onDelete: Cascade)
+}

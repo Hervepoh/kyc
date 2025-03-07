@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 28, 28, 27;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 248, 249, 250;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 11%;
+    --primary: 207 75% 42%; /* #1B75BB */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 84 49% 51%; /* #8DC640 */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 3% 59%; /* #939597 */
+    --muted-foreground: 0 0% 11%;
+    --accent: 207 75% 35%; /* #14689E */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 220 3% 59%;
+    --input: 220 3% 59%;
+    --ring: 207 75% 42%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 11%;
+    --foreground: 0 0% 100%;
+    --card: 207 75% 42%;
+    --card-foreground: 0 0% 100%;
+    --popover: 207 75% 42%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 207 75% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 84 49% 51%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 3% 59%;
+    --muted-foreground: 220 3% 89%;
+    --accent: 207 75% 35%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 207 75% 42%;
+    --input: 207 75% 42%;
+    --ring: 207 75% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .eneo-gradient {
+    background: linear-gradient(135deg, #1B75BB 0%, #14689E 100%);
+  }
+  
+  .form-card {
+    @apply bg-white rounded-lg shadow-lg p-8 border border-[#E5E7EB];
+  }
+  
+  .section-title {
+    @apply text-3xl font-bold text-[#1B75BB];
+  }
+  
+  .form-description {
+    @apply text-[#939597] mt-2;
+  }
+}

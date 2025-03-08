@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { Calendar as CalendarIcon, MapPin, Plus, Trash2, FileText } from "lucide-react";
 import {
   FormField,
   FormItem,
@@ -10,7 +12,6 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -18,20 +19,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, MapPin, Plus, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { Separator } from "@/components/ui/separator";
+import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+
 import { cn } from "@/lib/utils";
 import { FileUpload } from "./file-upload";
-import { toast } from "sonner";
-import { Separator } from "./ui/separator";
+
+
 
 
 interface KYCFormFieldsProps {
@@ -39,11 +42,17 @@ interface KYCFormFieldsProps {
   currentStep: number;
 }
 
-export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
+
+// export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
+const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
   const hasOtherContracts = form.watch("otherContracts.hasOther");
   const otherContractNumbers = form.watch("otherContracts.numbers") || [];
   const phoneNumbers = form.watch("phoneNumbers") || [];
   const isMoralEntity = form.watch("isMoralEntity"); // Checkbox value
+
+  useEffect(() => {
+    console.log("Component re-rendered");
+  });
 
   useEffect(() => {
     if (isMoralEntity) {
@@ -54,8 +63,6 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
       form.setValue("firstName", "");
     }
   }, [isMoralEntity]);
-
-
 
   const addContractNumber = React.useCallback(() => {
     const currentNumbers = form.getValues("otherContracts.numbers") || [];
@@ -69,20 +76,10 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
     form.setValue("otherContracts.numbers", newNumbers);
   }, [form]);
 
-  // // Automatically add/remove fields based on "Have Other Contracts" switch
-  // useEffect(() => {
-  //   if (hasOtherContracts) {
-  //     addContractNumber(); // Add the first field
-  //   } else {
-  //     otherContractNumbers.forEach((_: string, index: number) => removeContractNumber(index)); // Remove all fields
-  //   }
-  // }, [hasOtherContracts, addContractNumber, removeContractNumber, otherContractNumbers]);
-
-
-  const addPhoneNumber = () => {
+  const addPhoneNumber = React.useCallback(() => {
     const currentPhones = form.getValues("phoneNumbers") || [];
     form.setValue("phoneNumbers", [...currentPhones, { number: "", isWhatsapp: false }]);
-  };
+  }, [form]);
 
   const removePhoneNumber = (index: number) => {
     const currentPhones = form.getValues("phoneNumbers") || [];
@@ -94,6 +91,7 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
     newPhones.splice(index, 1);
     form.setValue("phoneNumbers", newPhones);
   };
+
 
   const PersonalInfoFields = () => (
     <>
@@ -129,7 +127,9 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
             <FormItem>
               <FormLabel>First Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your first name" {...field} />
+                <Input placeholder="Enter your first name"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -386,6 +386,7 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
       </div>
 
       <Separator className=" col-span-2 w-full" />
+
       <div className="col-span-full space-y-6">
         <h2 className="text-lg font-semibold">Unique Identity Number (NIU) </h2>
       </div>
@@ -409,7 +410,7 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
         name="nuiDocument.file"
         render={({ field: { onChange, value, ...field } }) => (
           <FormItem>
-            <FormLabel>ID Front Image</FormLabel>
+            <FormLabel>NUI file</FormLabel>
             <FormControl>
               <FileUpload
                 onFileSelect={onChange}
@@ -704,7 +705,7 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="contract.meterDetails.status"
@@ -883,6 +884,26 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
 
                   {/* Champs liés pour "Type of Usage" et "Meter Details" */}
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    {/* Meter Number */}
+                    <FormField
+                      control={form.control}
+                      name={`otherContracts.meterDetails.${index}.number`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm text-gray-600">Meter Number {index + 1}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Enter meter number"
+                              {...field}
+                              className="w-full"
+                            />
+                          </FormControl>
+                          <FormMessage className="text-red-500 text-sm" />
+                        </FormItem>
+                      )}
+                    />
+
                     {/* Type of Usage */}
                     <FormField
                       control={form.control}
@@ -907,24 +928,7 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
                       )}
                     />
 
-                    {/* Meter Number */}
-                    <FormField
-                      control={form.control}
-                      name={`otherContracts.meterDetails.${index}.number`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm text-gray-600">Meter Number {index + 1}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter meter number"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500 text-sm" />
-                        </FormItem>
-                      )}
-                    />
+
                   </div>
 
                   {/* Autres champs liés (optionnels) */}
@@ -992,4 +996,9 @@ export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
       <CurrentStep />
     </div>
   );
-}
+};
+
+export const KYCFormFields = KYCFormFieldsComponent;
+KYCFormFieldsComponent.displayName = "KYCFormFieldsComponent";
+
+

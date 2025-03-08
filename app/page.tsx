@@ -66,16 +66,32 @@ const contractDetailsSchema = z.object({
   usageType: z.enum(["residential", "commercial", "other"]),
   activity: z.string().optional(),
   meterDetails: z.object({
-      number: z.string(),
-      status: z.enum(["active", "inactive"]),
-      type: z.enum(["prepaid", "postpaid", "smart"]),
-      characteristics: z.string().optional(),
-      itineraryNumber: z.string().optional(),
-      transformerPower: z.string().optional(),
-      voltage: z.string().optional(),
+    number: z.string(),
+    status: z.enum(["active", "inactive"]),
+    type: z.enum(["prepaid", "postpaid", "smart"]),
+    characteristics: z.string().optional(),
+    itineraryNumber: z.string().optional(),
+    transformerPower: z.string().optional(),
+    voltage: z.string().optional(),
     //   
   }),
 })
+
+const otherContractsDetailsSchema = z.object({
+  // hasOther: z.boolean(),
+  // numbers: z
+  //   .array(
+  //     z
+  //       .string()
+  //       .regex(
+  //         contractNumberRegex,
+  //         "Contract number must be exactly 10 digits"
+  //       )
+  //   )
+  //   .optional()
+  //   .default([]),
+});
+
 
 const formSchema = z.object({
   isMoralEntity: z.boolean().default(false), // Checkbox for Physical Being or Moral Entity
@@ -106,20 +122,7 @@ const formSchema = z.object({
   }),
   email: z.string().email(),
   contract: contractDetailsSchema,
-  otherContracts: z.object({
-    //   hasOther: z.boolean(),
-    //   numbers: z
-    //     .array(
-    //       z
-    //         .string()
-    //         .regex(
-    //           contractNumberRegex,
-    //           "Contract number must be exactly 10 digits"
-    //         )
-    //     )
-    //     .optional()
-    //     .default([]),
-  }),
+  otherContracts: otherContractsDetailsSchema,
 });
 
 const formSteps = [
@@ -167,20 +170,7 @@ const stepValidationSchemas = [
   // Step 4: Meter Details
   z.object({
     contract: contractDetailsSchema,
-    otherContracts: z.object({
-      //   hasOther: z.boolean(),
-      //   numbers: z
-      //     .array(
-      //       z
-      //         .string()
-      //         .regex(
-      //           contractNumberRegex,
-      //           "Contract number must be exactly 10 digits"
-      //         )
-      //     )
-      //     .optional()
-      //     .default([]),
-    }),
+    otherContracts: otherContractsDetailsSchema,
   }),
 ];
 
@@ -213,7 +203,7 @@ export default function Home() {
       },
       phoneNumbers: [{ number: "", isWhatsapp: false }],
       email: "",
-      
+
       location: {
         reference: "",
         gpsCoordinates: "",
@@ -227,10 +217,10 @@ export default function Home() {
           type: "postpaid",
           number: "",
           status: "active",
-         
+
         }
       },
-      
+
       otherContracts: {
         //   hasOther: z.boolean(),
         //   numbers: z
@@ -245,15 +235,15 @@ export default function Home() {
         //     .optional()
         //     .default([]),
       },
-     
+
     },
-    mode: "onChange",
+    //mode: "onChange",
+    mode: "onBlur",
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true);
-
       const response = await fetch("/api/kyc", {
         method: "POST",
         headers: {
@@ -325,7 +315,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Image
-              src="https://www.eneocameroon.cm/images/logo.png"
+              src="/logo.png"
               alt="ENEO Logo"
               width={150}
               height={50}
@@ -393,7 +383,7 @@ export default function Home() {
                       </Button>
                     )}
 
-                    {currentStep < formSteps.length - 1 ? (
+                    {(currentStep < formSteps.length - 1) && (
                       <Button
                         type="button"
                         onClick={nextStep}
@@ -401,11 +391,12 @@ export default function Home() {
                       >
                         Next
                       </Button>
-                    ) : (
+                    )}
+                    {(currentStep == formSteps.length - 1) && (
                       <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="ml-auto bg-[#8DC640] hover:bg-[#7AB530] text-white"
+                        className="ml-auto bg-[#14689E] hover:text-white hover:border-[#14689E] text-white"
                       >
                         {isSubmitting ? "Submitting..." : "Submit KYC Form"}
                       </Button>

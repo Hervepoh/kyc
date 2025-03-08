@@ -11,8 +11,19 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+
+// enum StatusType {
+//   PENDING
+//   VALIDATED
+//   REJECTED
+//   INTEGRATED
+//   CANCELED
+// }
+
+
 model KYCForm {
   id             String    @id @default(uuid())
+  status         String    @default("PENDING")
   contractNumber String
   fullName       String
   firstName      String

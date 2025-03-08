@@ -4,44 +4,48 @@ import prisma from '@/lib/db';
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-    
+
+    const firstName = data.firstName.trim();
+    const lastName = data.lastName.trim();
+    const fullname = firstName + " " + lastName
+
     // Create the main KYC form record
     const kycForm = await prisma.kYCForm.create({
       data: {
-        fullName:  data.firstName + " " + data.lastName,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        fullName: fullname.trim()  ,
+        firstName: firstName,
+        lastName: lastName,
         gender: data.gender,
         dateOfBirth: data.dateOfBirth,
         
         // Identity document
         idType: data.identityDocument.type,
-        idNumber: data.identityDocument.number,
+        idNumber: data.identityDocument.number.trim(),
         idValidityDate: data.identityDocument.validityDate,
         
         // NIU
-        niuNumber: data.nuiDocument.number,
+        niuNumber: data.nuiDocument.number.trim(),
         
         // Contact information
         email: data.email,
         customerStatus: data.customerStatus,
         
         // Location
-        locationReference: data.location.reference,
+        locationReference: data.location.reference.trim(),
         gpsCoordinates: data.location.gpsCoordinates,
         
 
         contractNumber: data.contract.number,
         usageType: data.contract.usageType,
         // Meter details
-        meterNumber: data.contract.meterDetails.number,
-        meterCharacteristics: data.contract.meterDetails.characteristics,
+        meterNumber: data.contract.meterDetails.number.trim(),
+        meterCharacteristics: data.contract.meterDetails.characteristics.trim(),
         meterType: data.contract.meterDetails.type,
-        itineraryNumber: data.contract.meterDetails.itineraryNumber,
-        transformerPower: data.contract.meterDetails.transformerPower,
-        voltage: data.contract.meterDetails.voltage,
+        itineraryNumber: data.contract.meterDetails.itineraryNumber.trim(),
+        transformerPower: data.contract.meterDetails.transformerPower.trim(),
+        voltage: data.contract.meterDetails.voltage.trim(),
         meterStatus: data.contract.meterDetails.status,
-        activity: data.contract.activity,
+        activity: data.contract.activity.trim(),
       }
     });
     

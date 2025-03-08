@@ -30,11 +30,9 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-
 import { cn } from "@/lib/utils";
 import { FileUpload } from "./file-upload";
-
-
+import { useTranslations } from "next-intl";
 
 
 interface KYCFormFieldsProps {
@@ -42,9 +40,10 @@ interface KYCFormFieldsProps {
   currentStep: number;
 }
 
-
-// export function KYCFormFields({ form, currentStep }: KYCFormFieldsProps) {
 const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
+  
+  const t = useTranslations("kycForm");
+
   const hasOtherContracts = form.watch("otherContracts.hasOther");
   const otherContractNumbers = form.watch("otherContracts.numbers") || [];
   const phoneNumbers = form.watch("phoneNumbers") || [];
@@ -96,7 +95,7 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
   const PersonalInfoFields = () => (
     <>
       <div className="col-span-full space-y-6">
-        <h2 className="text-lg font-semibold">Personal Information</h2>
+        <h2 className="text-lg font-semibold">{t("steps.personalInfo")}</h2>
       </div>
 
       {/* Checkbox for Physical Being or Moral Entity */}
@@ -106,7 +105,7 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
         render={({ field }) => (
           <FormItem className="col-span-2 flex flex-row items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <FormLabel>Are you a Moral Entity?</FormLabel>
+              <FormLabel>{t("fields.moralEntity")}</FormLabel>
             </div>
             <FormControl>
               <Switch
@@ -118,6 +117,7 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
         )}
       />
 
+
       {/* First Name (only for Physical Being) */}
       {!isMoralEntity && (
         <FormField
@@ -125,11 +125,9 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>First Name</FormLabel>
+              <FormLabel>{t("fields.firstName")}</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your first name"
-                  {...field}
-                />
+                <Input placeholder={t("fields.firstNamePlaceholder")} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -137,16 +135,17 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
         />
       )}
 
+
       {/* Last Name or Company Name */}
       <FormField
         control={form.control}
         name="lastName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{isMoralEntity ? "Company Name" : "Last Name"}</FormLabel>
+            <FormLabel>{isMoralEntity ? t("fields.companyName") : t("fields.lastName")}</FormLabel>
             <FormControl>
               <Input
-                placeholder={isMoralEntity ? "Enter company name" : "Enter your last name"}
+                placeholder={isMoralEntity ? t("fields.companyNamePlaceholder") : t("fields.lastNamePlaceholder")}
                 {...field}
               />
             </FormControl>
@@ -161,7 +160,7 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
         name="dateOfBirth"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Date of Birth</FormLabel>
+            <FormLabel>{t("fields.dateOfBirth")}</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -175,7 +174,7 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
                     {field.value ? (
                       format(field.value, "PPP")
                     ) : (
-                      <span>Pick a date</span>
+                      <span>{t("fields.pickDate")}</span>
                     )}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
@@ -205,17 +204,17 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
           name="gender"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Gender</FormLabel>
+              <FormLabel>{t("fields.gender")}</FormLabel>
               <div style={{ marginTop: "1px" }}>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
+                      <SelectValue placeholder={t("fields.selectGender")} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="male">{t("fields.male")}</SelectItem>
+                    <SelectItem value="female">{t("fields.female")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -231,7 +230,7 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
   const IdentityFields = () => (
     <>
       <div className="col-span-full space-y-6">
-        <h2 className="text-lg font-semibold">Identity Card (CNI, Passport, Others)  </h2>
+        <h2 className="text-lg font-semibold">{t("fields.identity")}</h2>
       </div>
 
       <FormField
@@ -239,19 +238,19 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
         name="identityDocument.type"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Identity Document Type</FormLabel>
+            <FormLabel>{t("fields.identityDocumentType")}</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select document type" />
+                  <SelectValue placeholder={t("fields.selectDocumentType")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="CNI">National Identity Card (CNI)</SelectItem>
-                <SelectItem value="CS">Residence Permit (CS)</SelectItem>
-                <SelectItem value="RECP_CS">Receipt CS</SelectItem>
-                <SelectItem value="RECP_CNI">Receipt CNI</SelectItem>
-                <SelectItem value="TRADE_REGISTER">Trade Register</SelectItem>
+                <SelectItem value="CNI">{t("fields.CNI")}</SelectItem>
+                <SelectItem value="CS">{t("fields.CS")}</SelectItem>
+                <SelectItem value="RECP_CS">{t("fields.RECP_CS")}</SelectItem>
+                <SelectItem value="RECP_CNI">{t("fields.RECP_CNI")}</SelectItem>
+                <SelectItem value="TRADE_REGISTER">{t("fields.TRADE_REGISTER")}</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage />
@@ -265,24 +264,24 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
           name="identityDocument.postfix"
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel>Document postfix</FormLabel>
+              <FormLabel>{t("fields.documentPostfix")}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select" />
+                    <SelectValue placeholder={t("fields.select")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="AD">Adamawa</SelectItem>
-                  <SelectItem value="CE">Centre</SelectItem>
-                  <SelectItem value="ES">East</SelectItem>
-                  <SelectItem value="EN">Extreme-North</SelectItem>
-                  <SelectItem value="LT">Littoral</SelectItem>
-                  <SelectItem value="NO">North</SelectItem>
-                  <SelectItem value="OU">West</SelectItem>
-                  <SelectItem value="SU">South</SelectItem>
-                  <SelectItem value="NW">Northwest</SelectItem>
-                  <SelectItem value="SW">Southwest</SelectItem>
+                  <SelectItem value="AD">{t("fields.AD")}</SelectItem>
+                  <SelectItem value="CE">{t("fields.CE")}</SelectItem>
+                  <SelectItem value="ES">{t("fields.ES")}</SelectItem>
+                  <SelectItem value="EN">{t("fields.EN")}</SelectItem>
+                  <SelectItem value="LT">{t("fields.LT")}</SelectItem>
+                  <SelectItem value="NO">{t("fields.NO")}</SelectItem>
+                  <SelectItem value="OU">{t("fields.OU")}</SelectItem>
+                  <SelectItem value="SU">{t("fields.SU")}</SelectItem>
+                  <SelectItem value="NW">{t("fields.NW")}</SelectItem>
+                  <SelectItem value="SW">{t("fields.SW")}</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

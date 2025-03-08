@@ -11,7 +11,6 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-
 // enum StatusType {
 //   PENDING
 //   VALIDATED
@@ -19,7 +18,6 @@ datasource db {
 //   INTEGRATED
 //   CANCELED
 // }
-
 
 model KYCForm {
   id             String    @id @default(uuid())
@@ -33,16 +31,17 @@ model KYCForm {
   dateOfBirth    DateTime?
 
   // Identity document
-  idType         String
-  idNumber       String
-  idValidityDate DateTime?
-
+  idType           String
+  idNumber         String
+  idValidityDate   DateTime?
+  idFrontImagePath String?
+  idBackImagePath  String?
   // NIU
-  niuNumber String?
-
+  niuNumber        String?
+  niuFilePath      String?
   // Contact information
-  email          String
-  customerStatus String?
+  email            String
+  customerStatus   String?
 
   // Location
   locationReference String?

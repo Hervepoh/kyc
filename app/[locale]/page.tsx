@@ -13,168 +13,21 @@ import Image from "next/image";
 import { ReviewStep } from "@/components/review-step";
 import Confetti from "react-confetti"; // Import de react-confetti
 import { useWindowSize } from "react-use"; // Pour obtenir la taille de la fenêtre
+import { Footer } from "@/components/footer";
+import { useTranslations } from "next-intl";
+import { formSchema, stepValidationSchemas } from "@/schema/kycSchema";
 
-// Regex definitions
-const nameRegex = /^[a-zA-ZÀ-ÿ\s]+$/; // Regex pour les noms
-const cniRegex = /^(P|M)\d{12}[a-zA-Z]$/; // Regex pour le NUI
-const nuiRegex = /^(P|M)\d{12}[a-zA-Z]$/; // Regex pour le NUI
-const phoneRegex = /^[236]\d{8}$/;; // Regex pour les numéros de téléphone XXXXX
-const contractNumberRegex = /^\d{10}$/; // Regex pour les numéros de contrat
-
-// Common validation schemas
-const lastNameSchema = z
-  .string()
-  .min(1, "Name is required")
-  .regex(nameRegex, "Name cannot contain special characters");
-const firstNameSchema = z
-  .string()
-  .regex(nameRegex, "First Name cannot contain special characters")
-  .optional();
-const contractNumberSchema = z
-  .string()
-  .min(1, "Contract Number is required")
-  .regex(contractNumberRegex, "Contract number must be exactly 10 digits");
-
-const identityDocumentSchema = z.object({
-  type: z.enum(["CNI", "CS", "RECP_CS", "RECP_CNI", "TRADE_REGISTER"]),
-  postfix: z.enum(["AD", "CE", "ES", "EN", "LT", "NO", "OU", "SU", "NW", "SW"]),
-  number: z
-    .string()
-    .min(7, "Document number must be at least 7 characters")
-    .max(10, "Document number  must be at most 10 characters"),
-  //.regex(nuiRegex, "NIU Document Number must start with P or M, followed by 12 digits and end with a letter."),
-  validityDate: z.date({
-    required_error: "Validity date is required",
-    invalid_type_error: "Invalid date format",
-  }),
-  frontImage: z.any().refine((file) => file, "ID Front Image is required"),
-  backImage: z.any().refine((file) => file, "ID Back Image is required"),
-});
-
-const nuiDocumentSchema = z.object({
-  number: z.string()
-    .min(1, "NIU Document Number is required")
-    .max(14, "NIU must have 14 characters")
-    .regex(nuiRegex, "NIU Document Number must start with P or M, followed by 12 digits and end with a letter."),
-  file: z.any().refine((file) => file, "NIU Document File is required"),
-});
-
-const contractDetailsSchema = z.object({
-  number: contractNumberSchema,
-  status: z.enum(["active", "inactive"]),
-  customerStatus: z.enum(["landlord", "tenant", "other"]),
-  usageType: z.enum(["residential", "commercial", "other"]),
-  activity: z.string().optional(),
-  meterDetails: z.object({
-    number: z.string(),
-    status: z.enum(["active", "inactive"]),
-    type: z.enum(["prepaid", "postpaid", "smart"]),
-    characteristics: z.string().optional(),
-    itineraryNumber: z.string().optional(),
-    transformerPower: z.string().optional(),
-    voltage: z.string().optional(),
-    //   
-  }),
-})
-
-const otherContractsDetailsSchema = z.object({
-  // hasOther: z.boolean(),
-  // numbers: z
-  //   .array(
-  //     z
-  //       .string()
-  //       .regex(
-  //         contractNumberRegex,
-  //         "Contract number must be exactly 10 digits"
-  //       )
-  //   )
-  //   .optional()
-  //   .default([]),
-});
-
-
-const formSchema = z.object({
-  isMoralEntity: z.boolean().default(false), // Checkbox for Physical Being or Moral Entity
-  firstName: firstNameSchema,
-  lastName: lastNameSchema,
-  gender: z
-    .enum(["", "company", "male", "female"])
-    .refine((value) => value !== "", {
-      message: "Gender is required",
-    }),
-  dateOfBirth: z.date({
-    required_error: "Date of birth is required",
-    invalid_type_error: "Invalid date format",
-  }), // Date of Birth
-  identityDocument: identityDocumentSchema,
-  nuiDocument: nuiDocumentSchema,
-  phoneNumbers: z
-    .array(
-      z.object({
-        number: z.string().regex(phoneRegex, "Invalid Cameroonian phone number. It must start with 2, 3, or 6 and be 9 digits long."),
-        isWhatsapp: z.boolean().default(false),
-      })
-    )
-    .min(1, "At least one phone number is required"),
-  location: z.object({
-    reference: z.string().optional(),
-    gpsCoordinates: z.string().optional(),
-  }),
-  email: z.string().email(),
-  contract: contractDetailsSchema,
-  otherContracts: otherContractsDetailsSchema,
-});
-
-const formSteps = [
-  "Personal Info",
-  "Identity",
-  "Contact",
-  "Meter Details",
-  "Review",
-];
-
-// Define validation schemas for each step
-const stepValidationSchemas = [
-  // Step 1: Personal Info
-  z.object({
-    isMoralEntity: z.boolean(),
-    firstName: firstNameSchema,
-    lastName: lastNameSchema,
-    gender: z.string().min(1, "Gender is required"),
-    dateOfBirth: z.date({
-      required_error: "Date of birth is required",
-      invalid_type_error: "Invalid date format",
-    }),
-  }),
-  // Step 2: Identity
-  z.object({
-    identityDocument: identityDocumentSchema,
-    nuiDocument: nuiDocumentSchema,
-  }),
-  // Step 3: Contact
-  z.object({
-    phoneNumbers: z
-      .array(
-        z.object({
-          number: z.string().regex(phoneRegex, "Invalid phone number format"),
-          isWhatsapp: z.boolean(),
-        })
-      )
-      .min(1, "At least one phone number is required"),
-    email: z.string().email(),
-    location: z.object({
-      reference: z.string().optional(),
-      gpsCoordinates: z.string().optional(),
-    }),
-  }),
-  // Step 4: Meter Details
-  z.object({
-    contract: contractDetailsSchema,
-    otherContracts: otherContractsDetailsSchema,
-  }),
-];
 
 export default function Home() {
+  const t = useTranslations();
+
+  const formSteps = [
+    t('kycForm.steps.personalInfo'),
+    t('kycForm.steps.identity'),
+    t('kycForm.steps.contact'),
+    t('kycForm.steps.meterDetails')
+  ];
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isKYCComplete, setIsKYCComplete] = useState(false); // État pour gérer l'affichage du succès
@@ -237,25 +90,45 @@ export default function Home() {
       },
 
     },
-    //mode: "onChange",
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsSubmitting(true);
+
+      // Créer un objet FormData pour envoyer les fichiers
+      const formData = new FormData();
+
+      // Ajouter les données du formulaire en JSON
+      formData.append('formData', JSON.stringify(values));
+
+      // Ajouter les fichiers s'ils existent
+      if (values.identityDocument.frontImage) {
+        formData.append('idFrontImage', values.identityDocument.frontImage);
+      }
+
+      if (values.identityDocument.backImage) {
+        formData.append('idBackImage', values.identityDocument.backImage);
+      }
+
+      if (values.nuiDocument.file) {
+        formData.append('niuFile', values.nuiDocument.file);
+      }
+
       const response = await fetch("/api/kyc", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        //   body: JSON.stringify(values),
+        body: formData,
       });
 
       const data = await response.json();
       console.log("data", data);
       if (data.success) {
-        toast.success("KYC form submitted successfully!");
+        toast.success(t("title"));
         console.log("Form submitted with ID:", data.id);
         setIsKYCComplete(true); // Afficher le composant de succès
         setShowConfetti(true); // Activer les confettis
@@ -322,9 +195,9 @@ export default function Home() {
               className="h-12 w-auto"
             />
             <div className="text-white text-right">
-              <h2 className="text-lg font-semibold">Customer KYC Form</h2>
+              <h2 className="text-lg font-semibold">{t("header.title")}</h2>
               <p className="text-sm opacity-90">
-                Update your profile information
+                {t("header.subtitle")}
               </p>
             </div>
           </div>
@@ -335,25 +208,24 @@ export default function Home() {
         {isKYCComplete ? (
           <div className="text-center">
             <h2 className="text-2xl font-bold text-green-600">
-              🎉 Félicitations !
+              {t("kycForm.success.title")}
             </h2>
             <p className="mt-2 text-gray-700">
-              Vous avez terminé le KYC avec succès.
+              {t("kycForm.success.message")}
             </p>
             <Button
               onClick={restartForm}
               className="mt-4 bg-[#8DC640] hover:bg-[#7AB530] text-white"
             >
-              Recommencer
+              {t("kycForm.buttons.Restart")}
             </Button>
           </div>
         ) : (
           <>
             <div className="mb-8">
-              <h1 className="section-title">Know Your Customer (KYC)</h1>
+              <h1 className="section-title">{t("kycForm.title")}</h1>
               <p className="form-description">
-                Please complete all required information to update your customer
-                profile.
+                {t("kycForm.description")}
               </p>
             </div>
 
@@ -379,7 +251,7 @@ export default function Home() {
                         onClick={prevStep}
                         className="border-[#14689E] text-[#14689E] hover:bg-[#14689E] hover:text-white"
                       >
-                        Previous
+                        {t("kycForm.buttons.previous")}
                       </Button>
                     )}
 
@@ -389,7 +261,7 @@ export default function Home() {
                         onClick={nextStep}
                         className="ml-auto bg-[#8DC640] hover:bg-[#7AB530] text-white"
                       >
-                        Next
+                        {t("kycForm.buttons.next")}
                       </Button>
                     )}
                     {(currentStep == formSteps.length - 1) && (
@@ -398,7 +270,7 @@ export default function Home() {
                         disabled={isSubmitting}
                         className="ml-auto bg-[#14689E] hover:text-white hover:border-[#14689E] text-white"
                       >
-                        {isSubmitting ? "Submitting..." : "Submit KYC Form"}
+                        {isSubmitting ? t("kycForm.buttons.submitting") : t("kycForm.buttons.submit")}
                       </Button>
                     )}
                   </div>
@@ -408,6 +280,8 @@ export default function Home() {
           </>
         )}
       </div>
+
+      <Footer />
     </div>
   );
 }

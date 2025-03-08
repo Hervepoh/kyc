@@ -7,12 +7,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTranslations } from "next-intl";
 
 interface ReviewStepProps {
   formData: any;
 }
 
 export function ReviewStep({ formData }: ReviewStepProps) {
+  const t = useTranslations("kycForm");
+
   const formatDate = (date: Date | null | undefined) => {
     if (!date) return "Not provided";
     try {
@@ -50,11 +53,11 @@ export function ReviewStep({ formData }: ReviewStepProps) {
     {
       title: "Personal Information",
       fields: [
-        { label: "First Name", value: formData.firstName },
-        { label: "Last Name", value: formData.lastName },
+        { label: t('fields.firstName'), value: formData.firstName },
+        { label: t('fields.lastName'), value: formData.lastName },
         { label: "Gender", value: formData.gender },
         {
-          label: "Date of Birth",
+          label: t('fields.dateOfBirth'),
           value: formatDate(formData.dateOfBirth),
           isDate: true
         },
@@ -63,10 +66,10 @@ export function ReviewStep({ formData }: ReviewStepProps) {
     {
       title: "Identity Documents",
       fields: [
-        { label: "Document Type", value: formData.identityDocument?.type },
-        { label: "Document Number", value: formData.identityDocument?.number },
+        { label: t('fields.identityDocumentType'), value: formData.identityDocument?.type },
+        { label: t('fields.documentNumber'), value: formData.identityDocument?.number },
         {
-          label: "Validity Date",
+          label: t('fields.documentValidityDate'),
           value: formatDate(formData.identityDocument?.validityDate),
           isDate: true
         },

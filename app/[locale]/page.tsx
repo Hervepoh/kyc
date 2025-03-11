@@ -25,7 +25,8 @@ export default function Home() {
     t('kycForm.steps.personalInfo'),
     t('kycForm.steps.identity'),
     t('kycForm.steps.contact'),
-    t('kycForm.steps.meterDetails')
+    t('kycForm.steps.meterDetails'),
+    t('kycForm.steps.review')
   ];
 
   const [currentStep, setCurrentStep] = useState(0);

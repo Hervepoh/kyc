@@ -40,7 +40,7 @@ interface KYCFormFieldsProps {
   currentStep: number;
 }
 
-const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
+export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
   
   const t = useTranslations("kycForm");
 
@@ -61,7 +61,7 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
       form.setValue("gender", "");
       form.setValue("firstName", "");
     }
-  }, [isMoralEntity]);
+  }, [isMoralEntity, form]);
 
   const addContractNumber = React.useCallback(() => {
     const currentNumbers = form.getValues("otherContracts.numbers") || [];
@@ -996,8 +996,4 @@ const KYCFormFieldsComponent = ({ form, currentStep }: KYCFormFieldsProps) => {
     </div>
   );
 };
-
-export const KYCFormFields = KYCFormFieldsComponent;
-KYCFormFieldsComponent.displayName = "KYCFormFieldsComponent";
-
 

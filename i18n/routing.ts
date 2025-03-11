@@ -12,6 +12,10 @@ export const routing = defineRouting({
       en: "/dashboard",
       fr: "/tableau-de-board",
     },
+    "/auth/login": {
+      en: "/auth/login",
+      fr: "/connexion",
+    },
   },
 });
 

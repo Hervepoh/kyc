@@ -8,14 +8,14 @@ export const routing = defineRouting({
   // Used when no locale matches
   defaultLocale: "en",
   pathnames: {
-    "/dashboard": {
-      en: "/dashboard",
-      fr: "/tableau-de-board",
-    },
-    "/auth/login": {
-      en: "/auth/login",
-      fr: "/connexion",
-    },
+    // "/dashboard": {
+    //   en: "/dashboard",
+    //   fr: "/tableau-de-board",
+    // },
+    // "/auth/login": {
+    //   en: "/auth/login",
+    //   fr: "/connexion",
+    // },
   },
 });
 

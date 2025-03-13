@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Image from "next/image";
+import { signIn } from "@/auth";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -31,16 +32,16 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true);
-    //   const result = await signIn("credentials", {
-    //     username: values.username,
-    //     password: values.password,
-    //     redirect: false,
-    //   });
+      const result = await signIn("credentials", {
+        username: values.username,
+        password: values.password,
+        redirect: false,
+      });
 
-    //   if (result?.error) {
-    //     toast.error("Invalid credentials");
-    //     return;
-    //   }
+      if (result?.error) {
+        toast.error("Invalid credentials");
+        return;
+      }
 
       router.push("/dashboard");
       toast.success("Logged in successfully");

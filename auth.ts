@@ -1,44 +1,90 @@
-import NextAuth from "next-auth"
-import Credentials from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@auth/prisma-adapter"
+import NextAuth from "next-auth";
+import { PrismaAdapter } from "@auth/prisma-adapter";
+import prisma from "./prisma/prisma";
+import github from "next-auth/providers/github";
+import google from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 
-// Your own logic for dealing with plaintext password strings; be careful!
-
-import { signInSchema } from "./schema/authSchema"
-import prisma from "./lib/db"
-import { getUserFromDb, saltAndHashPassword } from "./lib/utils"
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
+    session: { strategy: "jwt" },
     adapter: PrismaAdapter(prisma),
     providers: [
-        Credentials({
-            // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-            // e.g. domain, username, password, 2FA token, etc.
+        CredentialsProvider({
+            name: "Sign in",
+            id: "credentials",
             credentials: {
-                email: {},
-                password: {},
+                email: {
+                    label: "Email",
+                    type: "email",
+                    placeholder: "example@example.com",
+                },
+                password: { label: "Password", type: "password" },
             },
-            authorize: async (credentials) => {
-                let user = null
-
-                const { email, password } = await signInSchema.parseAsync(credentials)
-
-                // logic to salt and hash password
-                // const pwHash = saltAndHashPassword(password)
-
-                // logic to verify if the user exists
-                // user = await getUserFromDb(email, pwHash)
-                //user = await getUserFromDb(email, password)
-
-                if (!user) {
-                    // No user found, so this is their first attempt to login
-                    // Optionally, this is also the place you could do a user registration
-                    throw new Error("Invalid credentials.")
+            async authorize(credentials) {
+                if (!credentials?.email || !credentials.password) {
+                    return null;
                 }
 
-                // return user object with their profile data
-                return user
+                const user = await prisma.user.findUnique({
+                    where: {
+                        email: String(credentials.email),
+                    },
+                });
+
+                if (
+                    !user
+                    // || !(await bcrypt.compare(String(credentials.password), user.password!))
+                ) {
+                    return null;
+                }
+
+                return {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    randomKey: "Hey cool",
+                };
             },
         }),
     ],
-})
+
+    callbacks: {
+        authorized({ auth, request: { nextUrl } }) {
+          const isLoggedIn = !!auth?.user;
+          // const paths = ["/profile", "/client-side"];
+          const paths = ["/"];
+          const isProtected = paths.some((path) =>
+            nextUrl.pathname.startsWith(path)
+          );
+
+          if (isProtected && !isLoggedIn) {
+            const redirectUrl = new URL("/api/auth/signin", nextUrl.origin);
+            redirectUrl.searchParams.append("callbackUrl", nextUrl.href);
+            return Response.redirect(redirectUrl);
+          }
+          return true;
+        },
+        jwt: ({ token, user }) => {
+            if (user) {
+                const u = user as unknown as any;
+                return {
+                    ...token,
+                    id: u.id,
+                    randomKey: u.randomKey,
+                };
+            }
+            return token;
+        },
+        session(params) {
+            return {
+                ...params.session,
+                user: {
+                    ...params.session.user,
+                    id: params.token.id as string,
+                    randomKey: params.token.randomKey,
+                },
+            };
+        },
+    },
+});

@@ -215,66 +215,68 @@ export default function Home() {
   });
 
 
+  const defaultValues = {
+    isMoralEntity: false,
+    firstName: "",
+    lastName: "",
+    gender: undefined,
+    dateOfBirth: undefined,
+    identityDocument: {
+      type: undefined,
+      postfix: {
+        code: "",
+        post: undefined
+      },
+      number: "",
+      validityDate: undefined,
+      frontImage: undefined,
+      backImage: undefined,
+    },
+    nuiDocument: {
+      number: "",
+      file: undefined,
+    },
+    phoneNumbers: [{ number: "", isWhatsapp: false }],
+    email: "",
+
+    location: {
+      reference: "",
+      gpsCoordinates: "",
+    },
+    contract: {
+      number: "",
+      status: undefined,
+      customerStatus: "tenant" as "landlord" | "tenant" | "other",
+      usageType: undefined,
+      hasMeterDetails: false,
+      meterDetails: {
+        type: "postpaid" as "postpaid" | "prepaid" | "smart",
+        number: "",
+        status: "active" as "active" | "inactive",
+
+      }
+    },
+
+    otherContracts: {
+      //   hasOther: z.boolean(),
+      //   numbers: z
+      //     .array(
+      //       z
+      //         .string()
+      //         .regex(
+      //           contractNumberRegex,
+      //           "Contract number must be exactly 10 digits"
+      //         )
+      //     )
+      //     .optional()
+      //     .default([]),
+    },
+
+  };
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      isMoralEntity: false,
-      firstName: "",
-      lastName: "",
-      gender: undefined,
-      dateOfBirth: undefined,
-      identityDocument: {
-        type: undefined,
-        postfix: {
-          code: "",
-          post: undefined
-        },
-        number: "",
-        validityDate: undefined,
-        frontImage: undefined,
-        backImage: undefined,
-      },
-      nuiDocument: {
-        number: "",
-        file: undefined,
-      },
-      phoneNumbers: [{ number: "", isWhatsapp: false }],
-      email: "",
-
-      location: {
-        reference: "",
-        gpsCoordinates: "",
-      },
-      contract: {
-        number: "",
-        status: "active",
-        customerStatus: "tenant",
-        usageType: undefined,
-        hasMeterDetails: false,
-        meterDetails: {
-          type: "postpaid",
-          number: "",
-          status: "active",
-
-        }
-      },
-
-      otherContracts: {
-        //   hasOther: z.boolean(),
-        //   numbers: z
-        //     .array(
-        //       z
-        //         .string()
-        //         .regex(
-        //           contractNumberRegex,
-        //           "Contract number must be exactly 10 digits"
-        //         )
-        //     )
-        //     .optional()
-        //     .default([]),
-      },
-
-    },
+    defaultValues: defaultValues,
     mode: "onChange",
   });
 
@@ -356,7 +358,13 @@ export default function Home() {
   const restartForm = () => {
     setIsKYCComplete(false); // Réinitialiser l'état de succès
     setCurrentStep(0); // Revenir à la première étape
-    form.reset(); // Réinitialiser les valeurs du formulaire
+
+    setShowSearchForm(false);
+    setSelectedCustomer(null); // ou undefined, selon ton type
+    setCustomers([]);          // vider la liste des résultats
+    setSearchTerm("");         // si tu as un champ de recherche
+
+    form.reset(defaultValues); // Réinitialiser les valeurs du formulaire
   };
 
 
@@ -448,7 +456,7 @@ export default function Home() {
           width={width}
           height={height}
           recycle={false} // Arrête de générer de nouveaux confettis après la fin
-          numberOfPieces={700} // Nombre de confettis
+          numberOfPieces={1000} // Nombre de confettis
           gravity={0.2} // Vitesse de chute
         />
       )}
@@ -559,10 +567,10 @@ export default function Home() {
                         </div>
                         <div className="flex gap-2 flex-col">
                           <h2 className="text-3xl md:text-5xl tracking-tighter max-w-xl font-regular text-left">
-                          {t("nickname")}
+                            {t("nickname")}
                           </h2>
                           <p className="text-lg max-w-xl lg:max-w-lg leading-relaxed tracking-tight text-muted-foreground  text-left">
-                          {t("about")}
+                            {t("about")}
                           </p>
                         </div>
                       </div>
@@ -585,7 +593,7 @@ export default function Home() {
                           <div className="flex flex-col">
                             <h3 className="text-xl tracking-tight">{t("kycForm.search.title")}</h3>
                             <p className="text-muted-foreground max-w-xs text-base">
-                            {t("kycForm.search.description")}
+                              {t("kycForm.search.description")}
                             </p>
                           </div>
                         </div>
@@ -597,10 +605,10 @@ export default function Home() {
                   <div className="flex flex-col gap-5">
                     <div>
                       <h2 className="text-xl font-semibold text-gray-800 mt-4 flex items-center gap-2">
-                        🔎 {t("kycForm.search.title")} 
+                        🔎 {t("kycForm.search.title")}
                       </h2>
                       <p className="text-sm text-gray-500">
-                      {t("kycForm.search.description")} 
+                        {t("kycForm.search.description")}
                       </p>
                     </div>
 

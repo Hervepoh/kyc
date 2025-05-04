@@ -120,11 +120,11 @@ model Account {
   provider          String
   providerAccountId String   @map("provider_account_id")
   token_type        String?
-  refresh_token     String?  
-  access_token      String?  
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   scope             String?
-  id_token          String?  
+  id_token          String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -136,8 +136,8 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   userId       String?  @map("user_id")
-  sessionToken String   @unique @map("session_token") 
-  accessToken  String?  @map("access_token") 
+  sessionToken String   @unique @map("session_token")
+  accessToken  String?  @map("access_token")
   expires      DateTime
   user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
@@ -156,6 +156,7 @@ model VerificationRequest {
 
   @@unique([identifier, token])
 }
+
 // model Audit {
 //   id        Int      @id @default(autoincrement())
 //   userId    Int?
@@ -170,3 +171,12 @@ model VerificationRequest {
 //   @@index([userId])
 //   @@map("audits")
 // }
+
+model Customer {
+  contract String @id
+  meter    String
+  fullName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

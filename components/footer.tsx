@@ -5,7 +5,7 @@ import LocaleSwitcher from "./LocaleSwitcher";
 
 export function Footer() {
     return (
-        <footer className="bg-white dark:bg-black">
+        <footer className="bg-white dark:bg-black max-h-[100px]">
             <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center ">
                 <div>
                     Built  by{' '}

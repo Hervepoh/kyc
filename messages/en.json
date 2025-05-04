@@ -1,6 +1,8 @@
 {
     "title": "ENEO-KYC",
     "description": "ENEO-KYC is an innovative application designed to streamline the identity verification and compliance process for businesses and individuals.",
+    "nickname": "📋 Secure KYC.",
+    "about": "Collect essential information in just a few clicks and ensure optimal compliance.",
     "header": {
         "title": "Customer KYC Form",
         "subtitle": "Update your profile information"
@@ -8,6 +10,18 @@
     "kycForm": {
         "title": "Know Your Customer (KYC)",
         "description": "Please complete all required information to update your customer profile.",
+        "start": {
+            "title": "Get started",
+            "description": "Manually fill in the customer's information.📝"
+        },
+        "search": {
+            "label": "Search",
+            "loading": "Searching ...",
+            "result": "Search résult :",
+            "select": "Select",
+            "title": "Search for an existing customer",
+            "description": "Save time by automatically importing information of a known customer.🔎"
+        },
         "steps": {
             "personalInfo": "Personal Info",
             "identity": "Identity",
@@ -35,6 +49,7 @@
             "companyName": "Company Name",
             "companyNamePlaceholder": "Enter company name",
             "dateOfBirth": "Date of Birth",
+            "companyDateOfBirth": "Date of Birth",
             "pickDate": "Pick a date",
             "gender": "Gender",
             "selectGender": "Select gender",
@@ -42,12 +57,25 @@
             "female": "Female",
             "identityDocumentType": "Identity Document Type",
             "selectDocumentType": "Select document type",
+            "identityDocument": {
+                "label": "Document Number",
+                "placeholder": "Enter document number",
+                "validityDate": "Document Validity Date",
+                "frontfile": "ID Front Image",
+                "frontlabel": "Upload ID front image",
+                "backfile": "ID Back Image",
+                "backlabel": "Upload ID back image"
+            },
+            "traderegister": {
+                "label": "Trade register number",
+                "placeholder": "Enter trade register number"
+            },
             "CNI": "National Identity Card (CNI)",
             "CS": "Residence Permit (CS)",
             "RECP_CS": "Receipt CS",
             "RECP_CNI": "Receipt CNI",
             "TRADE_REGISTER": "Trade Register",
-            "documentPostfix": "Document Postfix",
+            "documentPostfix": "Postfix",
             "select": "Select",
             "AD": "Adamawa",
             "CE": "Centre",
@@ -84,6 +112,79 @@
             "contractInformation": "Contract Information",
             "contractNumber": "Contract Number",
             "contractNumberPlaceholder": "Enter 10-digit contract number",
+            "contract": {
+                "title": "Contract Information",
+                "number": {
+                    "label": "Contract Number",
+                    "placeholder": "Enter 10-digit contract number"
+                },
+                "status": {
+                    "label": "Status",
+                    "placeholder": "Select status",
+                    "active": "Active",
+                    "inactive": "Inactive"
+                },
+                "customerStatus": {
+                    "label": "Customer Status",
+                    "placeholder": "Select status",
+                    "landlord": "Landlord",
+                    "tenant": "Tenant",
+                    "other": "Other"
+                },
+                "usageType": {
+                    "label": "Type of Usage",
+                    "placeholder": "Select usage type",
+                    "residential": "Residential",
+                    "commercial": "Commercial",
+                    "other": "Other"
+                },
+                "activity": {
+                    "label": "Activity",
+                    "placeholder": "Enter activity"
+                },
+                "meterDetails": {
+                    "title": "Meter Details",
+                    "toggle": "Can you provide us Meter Details information?",
+                    "number": {
+                        "label": "Meter Number",
+                        "placeholder": "Enter meter number"
+                    },
+                    "characteristics": {
+                        "label": "Meter Characteristics",
+                        "placeholder": "Enter meter characteristics"
+                    },
+                    "type": {
+                        "label": "Meter Type",
+                        "placeholder": "Select meter type",
+                        "prepaid": "Prepaid",
+                        "postpaid": "Postpaid",
+                        "smart": "Smart Meter"
+                    },
+                    "itineraryNumber": {
+                        "label": "Itinerary Number",
+                        "placeholder": "Enter itinerary number"
+                    },
+                    "transformerPower": {
+                        "label": "Transformer Power",
+                        "placeholder": "Enter transformer power"
+                    },
+                    "voltage": {
+                        "label": "Voltage",
+                        "placeholder": "Enter voltage"
+                    }
+                },
+                "otherContracts": {
+                    "title": "Other Contracts",
+                    "toggle": "Have Other Contracts?",
+                    "empty": "No other contracts added yet.",
+                    "add": "Add Contract",
+                    "numberLabel": "Contract Number",
+                    "usageType": "Type of Usage",
+                    "meterNumber": "Meter Number",
+                    "itineraryNumber": "Itinerary Number",
+                    "transformerPower": "Transformer Power"
+                }
+            },
             "status": "Status",
             "selectStatus": "Select status",
             "active": "Active",
@@ -120,8 +221,62 @@
         },
         "validations": {
             "lastname": {
-                "min":"Name is required",
+                "min": "Name is required",
                 "regex": "Name cannot contain special characters"
+            }
+        },
+        "errors": {
+            "fillAll": "Please fill all required fields correctly",
+            "required": "This field is required",
+            "invalidName": "Name cannot contain special characters",
+            "invalidPhone": "Invalid Cameroonian phone number. It must start with 2, 3, or 6 and be 9 digits long.",
+            "invalidEmail": "Invalid email address",
+            "genderRequired": "Gender is required",
+            "requiredDate": "Date of birth is required",
+            "invalidDate": "Invalid date format",
+            "phoneRequired": "At least one phone number is required",
+            "documentNumberMin": "Document number must be at least 7 characters",
+            "documentNumberMax": "Document number must be at most 10 characters",
+            "type": {
+                "invalid": "Please select a valid document type."
+            },
+            "number": {
+                "cni": "The CNI number must be exactly 9 characters long.",
+                "cs": "The CS number must be exactly 7 characters long.",
+                "recp_cs": "The RECP_CS number must be exactly 10 characters long.",
+                "recp_cni": "The RECP_CNI number must be exactly 10 characters long.",
+                "trade_register": {
+                    "min": "The number must be at least 7 characters long.",
+                    "max": "The number must be at most 15 characters long."
+                }
+            },
+            "validityDate": {
+                "required": "Validity date is required",
+                "invalid": "Invalid date format"
+            },
+            "postfix": {
+                "post": "Select a valid region",
+                "code": "Code must be two digits, e.g., 01, 02, ..., 99"
+            },
+            "frontImageRequired": "ID Front Image is required",
+            "backImageRequired": "ID Back Image is required",
+            "niuNumberRequired": "NIU Document Number is required",
+            "niuNumberInvalid": "NIU must start with P or M, followed by 12 digits and end with a letter.",
+            "niuFileRequired": "NIU Document File is required",
+            "nui": {
+                "required": "NIU Document Number is required.",
+                "length": "NIU must have 14 characters.",
+                "format": "NIU Document Number must start with P or M, followed by 12 digits and end with a letter.",
+                "fileRequired": "NIU Document File is required."
+            },
+            "phone": {
+                "invalid": "Invalid Cameroonian phone number. It must start with 2, 3, or 6 and be 9 digits long.",
+                "min": "At least one phone number is required."
+            },
+            "contract": {
+                "numberRequired": "Contract Number is required.",
+                "invalid": "Contract number must be exactly 10 digits.",
+                "notFound": "Contract not found in our system"
             }
         }
     }

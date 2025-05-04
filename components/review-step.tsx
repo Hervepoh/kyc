@@ -52,16 +52,25 @@ export function ReviewStep({ formData }: ReviewStepProps) {
   const sections = [
     {
       title: "Personal Information",
-      fields: [
-        { label: t('fields.firstName'), value: formData.firstName },
-        { label: t('fields.lastName'), value: formData.lastName },
-        { label: "Gender", value: formData.gender },
-        {
-          label: t('fields.dateOfBirth'),
-          value: formatDate(formData.dateOfBirth),
-          isDate: true
-        },
-      ],
+      fields: formData.isMoralEntity
+        ? [
+          { label: t('fields.companyName'), value: formData.lastName },
+          {
+            label: t('fields.companyDateOfBirth'),
+            value: formatDate(formData.dateOfBirth),
+            isDate: true
+          },
+        ]
+        : [
+          { label: t('fields.firstName'), value: formData.firstName },
+          { label: t('fields.lastName'), value: formData.lastName },
+          { label: "Gender", value: formData.gender },
+          {
+            label: t('fields.dateOfBirth'),
+            value: formatDate(formData.dateOfBirth),
+            isDate: true
+          },
+        ],
     },
     {
       title: "Identity Documents",
@@ -73,7 +82,7 @@ export function ReviewStep({ formData }: ReviewStepProps) {
           value: formatDate(formData.identityDocument?.validityDate),
           isDate: true
         },
-        { label: "NIU Number", value: formData.niu?.number },
+        { label: t('fields.uniqueIdentityNumber'), value: formData.nuiDocument.number },
       ],
     },
     {

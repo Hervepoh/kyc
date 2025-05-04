@@ -1,6 +1,8 @@
 {
   "title": "ENEO-KYC",
   "description": "ENEO-KYC est une application innovante conçue pour simplifier le processus de vérification d'identité et de conformité pour les entreprises et les particuliers.",
+  "nickname": "📋 KYC sécurisé.",
+  "about": "Collectez les informations essentielles en quelques clics et assurez une conformité optimale",
   "header": {
     "title": "Formulaire KYC Client",
     "subtitle": "Mettre à jour vos informations de profil"
@@ -8,11 +10,23 @@
   "kycForm": {
     "title": "Connaître votre client (KYC)",
     "description": "Veuillez compléter toutes les informations requises pour mettre à jour votre profil client.",
+    "start": {
+      "title": "Démarrer",
+      "description": "Remplissez manuellement les informations du client.📝"
+    },
+    "search": {
+      "label": "Rechercher",
+      "loading": "Recherche ...",
+      "result": "Résultats de la recherche :",
+      "select": "Sélectionner",
+      "title": "Rechercher un client existant",
+      "description": "Gagnez du temps en important automatiquement les informations d'un client connu.🔎"
+    },
     "steps": {
-      "personalInfo": "Infos Personnelles",
+      "personalInfo": "Personnelles",
       "identity": "Identité",
       "contact": "Contact",
-      "meterDetails": "Détails du Compteur",
+      "meterDetails": "Détails du Contract",
       "review": "Vérification"
     },
     "buttons": {
@@ -35,6 +49,7 @@
       "companyName": "Nom de l'entreprise",
       "companyNamePlaceholder": "Entrez le nom de l'entreprise",
       "dateOfBirth": "Date de naissance",
+      "companyDateOfBirth": "Date de création",
       "pickDate": "Choisir une date",
       "gender": "Genre",
       "selectGender": "Sélectionnez le genre",
@@ -42,12 +57,25 @@
       "female": "Femme",
       "identityDocumentType": "Type de document d'identité",
       "selectDocumentType": "Sélectionnez le type de document",
+      "identityDocument": {
+        "label": "Numéro du document",
+        "placeholder": "Entrez le numéro du document",
+        "validityDate": "Date de validité du document",
+        "frontfile": "Recto de la pièce",
+        "frontlabel": "Téléverser l'image recto de la pièce",
+        "backfile": "Verso de la pièce",
+        "backlabel": "Téléverser l'image verso de la pièce"
+      },
+      "traderegister": {
+        "label": "Numéro du registre de commerce",
+        "placeholder": "Entrez le numéro du registre de commerce"
+      },
       "CNI": "Carte Nationale d'Identité (CNI)",
       "CS": "Carte de Séjour (CS)",
       "RECP_CS": "Récepissé CS",
       "RECP_CNI": "Récepissé CNI",
       "TRADE_REGISTER": "Registre de commerce",
-      "documentPostfix": "Suffixe du document",
+      "documentPostfix": "Poste",
       "select": "Sélectionner",
       "AD": "Adamaoua",
       "CE": "Centre",
@@ -84,6 +112,79 @@
       "contractInformation": "Informations sur le contrat",
       "contractNumber": "Numéro de contrat",
       "contractNumberPlaceholder": "Entrez un numéro de contrat à 10 chiffres",
+      "contract": {
+        "title": "Informations du contrat",
+        "number": {
+          "label": "Numéro de contrat",
+          "placeholder": "Saisir un numéro de contrat de 10 chiffres"
+        },
+        "status": {
+          "label": "Statut",
+          "placeholder": "Sélectionner un statut",
+          "active": "Actif",
+          "inactive": "Inactif"
+        },
+        "customerStatus": {
+          "label": "Statut du client",
+          "placeholder": "Sélectionner un statut",
+          "landlord": "Propriétaire",
+          "tenant": "Locataire",
+          "other": "Autre"
+        },
+        "usageType": {
+          "label": "Type d'utilisation",
+          "placeholder": "Sélectionner un type d'utilisation",
+          "residential": "Résidentiel",
+          "commercial": "Commercial",
+          "other": "Autre"
+        },
+        "activity": {
+          "label": "Activité",
+          "placeholder": "Saisir l'activité"
+        },
+        "meterDetails": {
+          "title": "Détails du compteur",
+          "toggle": "Pouvez-vous nous fournir les informations du compteur ?",
+          "number": {
+            "label": "Numéro du compteur",
+            "placeholder": "Saisir le numéro du compteur"
+          },
+          "characteristics": {
+            "label": "Caractéristiques du compteur",
+            "placeholder": "Saisir les caractéristiques"
+          },
+          "type": {
+            "label": "Type de compteur",
+            "placeholder": "Sélectionner le type de compteur",
+            "prepaid": "Prépayé",
+            "postpaid": "Postpayé",
+            "smart": "Intelligent"
+          },
+          "itineraryNumber": {
+            "label": "Numéro d'itinéraire",
+            "placeholder": "Saisir le numéro d'itinéraire"
+          },
+          "transformerPower": {
+            "label": "Puissance du transformateur",
+            "placeholder": "Saisir la puissance du transformateur"
+          },
+          "voltage": {
+            "label": "Tension",
+            "placeholder": "Saisir la tension"
+          }
+        },
+        "otherContracts": {
+          "title": "Autres contrats",
+          "toggle": "Avez-vous d'autres contrats ?",
+          "empty": "Aucun autre contrat ajouté pour l’instant.",
+          "add": "Ajouter un contrat",
+          "numberLabel": "Numéro de contrat",
+          "usageType": "Type d'utilisation",
+          "meterNumber": "Numéro du compteur",
+          "itineraryNumber": "Numéro d'itinéraire",
+          "transformerPower": "Puissance du transformateur"
+        }
+      },
       "status": "Statut",
       "selectStatus": "Sélectionnez le statut",
       "active": "Actif",
@@ -117,6 +218,60 @@
       "addContract": "Ajouter un contrat",
       "noOtherContracts": "Aucun autre contrat ajouté pour le moment.",
       "atLeastOnePhoneNumber": "Au moins un numéro de téléphone est requis"
+    },
+    "errors": {
+      "fillAll": "Veuillez remplir correctement tous les champs requis",
+      "required": "Ce champ est requis",
+      "invalidName": "Le nom ne doit pas contenir de caractères spéciaux",
+      "invalidPhone": "Numéro de téléphone invalide",
+      "invalidEmail": "Adresse e-mail invalide",
+      "genderRequired": "Le genre est requis",
+      "invalidDate": "Format de date invalide",
+      "requiredDate": "Votre date de naissance est requise",
+      "phoneRequired": "Au moins un numéro est requis",
+      "documentNumberMin": "Le numéro doit contenir au moins 7 caractères",
+      "documentNumberMax": "Le numéro doit contenir au plus 10 caractères",
+      "type": {
+        "invalid": "Veuillez sélectionner un type de document valide."
+      },
+      "number": {
+        "cni": "Le numéro CNI doit contenir exactement 9 caractères",
+        "cs": "Le numéro CS doit contenir exactement 7 caractères",
+        "recp_cs": "Le numéro RECP_CS doit contenir exactement 10 caractères",
+        "recp_cni": "Le numéro RECP_CNI doit contenir exactement 10 caractères",
+        "trade_register": {
+          "min": "Le numéro doit contenir au moins 7 caractères",
+          "max": "Le numéro doit contenir au plus 15 caractères"
+        }
+      },
+      "validityDate": {
+        "required": "La date de validité est requise",
+        "invalid": "Format de date invalide"
+      },
+      "postfix": {
+        "post": "Veuillez choisir une région valide",
+        "code": "Le code doit contenir exactement deux chiffres (01 à 99)"
+      },
+      "frontImageRequired": "L'image recto est requise",
+      "backImageRequired": "L'image verso est requise",
+      "niuNumberRequired": "NIU Document Number is required",
+      "niuNumberInvalid": "NIU must start with P or M, followed by 12 digits and end with a letter.",
+      "niuFileRequired": "NIU Document File is required",
+      "nui": {
+        "required": "Le numéro NIU est requis.",
+        "length": "Le NIU doit comporter 14 caractères.",
+        "format": "Le NIU doit commencer par P ou M, suivi de 12 chiffres et se terminer par une lettre.",
+        "fileRequired": "Le fichier NIU est requis."
+      },
+      "phone": {
+        "invalid": "Numéro de téléphone invalide. Il doit commencer par 2, 3 ou 6 et comporter 9 chiffres.",
+        "min": "Au moins un numéro de téléphone est requis."
+      },
+      "contract": {
+        "numberRequired": "Le numéro de contrat est requis.",
+        "invalid": "Le numéro de contrat doit contenir exactement 10 chiffres.",
+        "notFound": "Ce numéro de contrat n'existe pas"
+      }
     }
   }
 }

@@ -70,14 +70,14 @@
   }
   
   .form-card {
-    @apply bg-white rounded-lg shadow-lg p-8 border border-[#E5E7EB];
+    @apply bg-white min-w-[320px]  max-w-[90vw] md:w-full rounded-lg shadow-lg p-4 md:p-8 border border-[#E5E7EB];
   }
   
   .section-title {
-    @apply text-3xl font-bold text-[#1B75BB];
+    @apply text-2xl md:text-3xl font-bold text-[#1B75BB];
   }
   
   .form-description {
-    @apply text-[#939597] mt-2;
+    @apply text-[#939597] md:w-full  max-w-[90vw] mt-2 text-sm md:text-base break-words whitespace-normal;
   }
 }

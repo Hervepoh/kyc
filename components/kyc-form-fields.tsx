@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { UseFormReturn } from "react-hook-form";
-import { format } from "date-fns";
 import { toast } from "sonner";
-import { Calendar as CalendarIcon, MapPin, Plus, Trash2, FileText } from "lucide-react";
+import React, { useEffect } from "react";
+import { useTranslations } from "next-intl";
+import { UseFormReturn } from "react-hook-form";
+import { MapPin, Plus, Trash2 } from "lucide-react";
+
 import {
   FormField,
   FormItem,
@@ -19,20 +20,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
-import { Calendar } from "@/components/ui/calendar";
+
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { CalenderBirthDay } from "@/components/ui/calendar-birthday";
+import { CalenderValidity } from "@/components/ui/calendar-validity";
+import { FileUpload } from "@/components/file-upload";
 
-import { cn } from "@/lib/utils";
-import { FileUpload } from "./file-upload";
-import { useTranslations } from "next-intl";
+import { checkContractExists, cn } from "@/lib/utils";
 
 
 interface KYCFormFieldsProps {
@@ -40,40 +37,14 @@ interface KYCFormFieldsProps {
   currentStep: number;
 }
 
-export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
-  
+export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
   const t = useTranslations("kycForm");
 
-  const hasOtherContracts = form.watch("otherContracts.hasOther");
-  const otherContractNumbers = form.watch("otherContracts.numbers") || [];
+  const isMoralEntity = form.watch("isMoralEntity");
+  const identityDocumentType = form.watch("identityDocument.type");
+
+  // Phone 
   const phoneNumbers = form.watch("phoneNumbers") || [];
-  const isMoralEntity = form.watch("isMoralEntity"); // Checkbox value
-
-  useEffect(() => {
-    console.log("Component re-rendered");
-  });
-
-  useEffect(() => {
-    if (isMoralEntity) {
-      form.setValue("gender", "company");
-      form.setValue("firstName", " ");
-    } else {
-      form.setValue("gender", "");
-      form.setValue("firstName", "");
-    }
-  }, [isMoralEntity, form]);
-
-  const addContractNumber = React.useCallback(() => {
-    const currentNumbers = form.getValues("otherContracts.numbers") || [];
-    form.setValue("otherContracts.numbers", [...currentNumbers, ""]);
-  }, [form]);
-
-  const removeContractNumber = React.useCallback((index: number) => {
-    const currentNumbers = form.getValues("otherContracts.numbers") || [];
-    const newNumbers = [...currentNumbers];
-    newNumbers.splice(index, 1);
-    form.setValue("otherContracts.numbers", newNumbers);
-  }, [form]);
 
   const addPhoneNumber = React.useCallback(() => {
     const currentPhones = form.getValues("phoneNumbers") || [];
@@ -91,9 +62,82 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
     form.setValue("phoneNumbers", newPhones);
   };
 
+  // Meter 
+  const hasMeterDetails = form.watch("contract.hasMeterDetails");
+  const hasOtherContracts = form.watch("otherContracts.hasOther");
+  const otherContractNumbers = form.watch("otherContracts.numbers") || [];
 
-  const PersonalInfoFields = () => (
-    <>
+  const addContractNumber = React.useCallback(() => {
+    const currentNumbers = form.getValues("otherContracts.numbers") || [];
+    form.setValue("otherContracts.numbers", [...currentNumbers, ""]);
+  }, [form]);
+
+  const removeContractNumber = React.useCallback((index: number) => {
+    const currentNumbers = form.getValues("otherContracts.numbers") || [];
+    const newNumbers = [...currentNumbers];
+    newNumbers.splice(index, 1);
+    form.setValue("otherContracts.numbers", newNumbers);
+  }, [form]);
+
+
+  async function handleContractBlur(e: React.FocusEvent<HTMLInputElement>, field = 'contract.number') {
+    const contractNumber = e.target.value;
+
+    if (!contractNumber) return;
+
+    const exists = await checkContractExists(contractNumber);
+
+    if (!exists) {
+      form.setError(field, {
+        type: 'manual',
+        message: t('errors.contract.notFound'), // dans ton fichier de traduction
+      });
+    } else {
+      form.clearErrors(field);
+    }
+  }
+
+  useEffect(() => {
+    if (isMoralEntity) {
+      form.resetField("firstName");
+      form.resetField("lastName");
+      form.resetField("gender");
+      form.resetField("dateOfBirth");
+      form.setValue("identityDocument.type", "TRADE_REGISTER");
+      form.setValue("gender", "company");
+    } else {
+      form.setValue("gender", undefined);
+      form.resetField("lastName"); // Company name est dans lastName
+      form.resetField("dateOfBirth");
+      form.setValue("identityDocument.type", "CNI");
+    }
+    form.setValue("dateOfBirth", null, { shouldValidate: false, shouldDirty: false });
+  }, [isMoralEntity, form]);
+
+  useEffect(() => {
+    // Réinitialise les champs lorsque le type change
+    if (identityDocumentType) {
+      // Réinitialiser tous les autres champs
+      form.setValue("identityDocument.number", "");
+      form.setValue("identityDocument.postfix", { post: "", code: "" }, { shouldValidate: false, shouldDirty: false });
+      form.setValue("identityDocument.validityDate", null, { shouldValidate: false, shouldDirty: false });
+      // Réinitialiser les erreurs de validation
+      form.clearErrors("identityDocument.number");
+      form.clearErrors("identityDocument.postfix");
+      form.clearErrors("identityDocument.validityDate");
+
+      form.resetField("identityDocument.frontImage");
+      form.resetField("identityDocument.backImage", undefined);
+    }
+  }, [identityDocumentType, form]);
+
+
+
+  const stepComponents = [
+    <div
+      key={0}
+      className="grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
       <div className="col-span-full space-y-6">
         <h2 className="text-lg font-semibold">{t("steps.personalInfo")}</h2>
       </div>
@@ -117,127 +161,146 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
         )}
       />
 
-
-      {/* First Name (only for Physical Being) */}
-      {!isMoralEntity && (
-        <FormField
-          control={form.control}
-          name="firstName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("fields.firstName")}</FormLabel>
-              <FormControl>
-                <Input placeholder={t("fields.firstNamePlaceholder")} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
-
-
-      {/* Last Name or Company Name */}
-      <FormField
-        control={form.control}
-        name="lastName"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>{isMoralEntity ? t("fields.companyName") : t("fields.lastName")}</FormLabel>
-            <FormControl>
-              <Input
-                placeholder={isMoralEntity ? t("fields.companyNamePlaceholder") : t("fields.lastNamePlaceholder")}
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* Birthday */}
-      <FormField
-        control={form.control}
-        name="dateOfBirth"
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel>{t("fields.dateOfBirth")}</FormLabel>
-            <Popover>
-              <PopoverTrigger asChild>
+      {isMoralEntity
+        ? (<>
+          <FormField
+            key={'companyName'}
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem className="col-span-2 md:col-span-1">
+                <FormLabel>{t("fields.companyName")}</FormLabel>
                 <FormControl>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full pl-3 text-left font-normal",
-                      !field.value && "text-muted-foreground"
-                    )}
-                  >
-                    {field.value ? (
-                      format(field.value, "PPP")
-                    ) : (
-                      <span>{t("fields.pickDate")}</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
+                  <Input
+                    {...field}
+                    placeholder={t("fields.companyNamePlaceholder")}
+                  />
                 </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={field.value}
-                  onSelect={field.onChange}
-                  disabled={(date) =>
-                    date > new Date() || date < new Date("1900-01-01")
-                  }
-                  initialFocus
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            key={'companyDateOfBirth'}
+            control={form.control}
+            name="dateOfBirth"
+            render={({ field }) => (
+              <FormItem className="col-span-2 md:col-span-1 flex flex-col">
+                <FormLabel>{t("fields.companyDateOfBirth")}</FormLabel>
+                <CalenderBirthDay
+                  key={`companyDateOfBirthCalendar`}
+                  date={field.value}
+                  setDate={field.onChange}
+                  placeholder={t("fields.pickDate")}
                 />
-              </PopoverContent>
-            </Popover>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </>)
+        : (<>
+          {/* First Name (only for Physical Being) */}
+          <FormField
+            key={'firstName'}
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem className="col-span-2 md:col-span-1">
+                <FormLabel>{t("fields.firstName")}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder={t("fields.firstNamePlaceholder")}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      {/* Gender (only for Physical Being) */}
-      {!isMoralEntity && (
-        <FormField
-          control={form.control}
-          name="gender"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("fields.gender")}</FormLabel>
-              <div style={{ marginTop: "1px" }}>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("fields.selectGender")} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="male">{t("fields.male")}</SelectItem>
-                    <SelectItem value="female">{t("fields.female")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
+          {/* Last Name (only for Physical Being) */}
+          <FormField
+            key={'lastName'}
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem className="col-span-2 md:col-span-1">
+                <FormLabel>{t("fields.lastName")}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder={t("fields.lastNamePlaceholder")}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-    </>
-  );
+          {/* Birthday (only for Physical Being) */}
+          <FormField
+            key={'dateOfBirth'}
+            control={form.control}
+            name="dateOfBirth"
+            render={({ field }) => (
+              <FormItem className="col-span-2 md:col-span-1 flex flex-col">
+                <FormLabel>{t("fields.dateOfBirth")}</FormLabel>
+                <CalenderBirthDay
+                  key={`dateOfBirthCalendar`}
+                  date={field.value}
+                  setDate={field.onChange}
+                  placeholder={t("fields.pickDate")}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-  const IdentityFields = () => (
-    <>
+          {/* Gender (only for Physical Being) */}
+          <FormField
+            key={'gender'}
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem className="col-span-2 md:col-span-1">
+                <FormLabel>{t("fields.gender")}</FormLabel>
+                <div style={{ marginTop: "1px" }}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("fields.selectGender")} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="male">{t("fields.male")}</SelectItem>
+                      <SelectItem value="female">{t("fields.female")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+        </>)
+      }
+
+    </div>,
+
+    <div
+      key={1}
+      className="grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
       <div className="col-span-full space-y-6">
-        <h2 className="text-lg font-semibold">{t("fields.identity")}</h2>
+        <h2 className="text-lg font-semibold">{t("steps.identity")}</h2>
       </div>
 
       <FormField
+        key={"identityDocument.type"}
         control={form.control}
         name="identityDocument.type"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="col-span-2 md:col-span-1">
             <FormLabel>{t("fields.identityDocumentType")}</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
@@ -246,11 +309,18 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="CNI">{t("fields.CNI")}</SelectItem>
-                <SelectItem value="CS">{t("fields.CS")}</SelectItem>
-                <SelectItem value="RECP_CS">{t("fields.RECP_CS")}</SelectItem>
-                <SelectItem value="RECP_CNI">{t("fields.RECP_CNI")}</SelectItem>
-                <SelectItem value="TRADE_REGISTER">{t("fields.TRADE_REGISTER")}</SelectItem>
+
+                {isMoralEntity
+                  ? <SelectItem value="TRADE_REGISTER">{t("fields.TRADE_REGISTER")}</SelectItem>
+                  : (
+                    <>
+                      <SelectItem value="CNI">{t("fields.CNI")}</SelectItem>
+                      <SelectItem value="CS">{t("fields.CS")}</SelectItem>
+                      <SelectItem value="RECP_CS">{t("fields.RECP_CS")}</SelectItem>
+                      <SelectItem value="RECP_CNI">{t("fields.RECP_CNI")}</SelectItem>
+                    </>
+                  )
+                }
               </SelectContent>
             </Select>
             <FormMessage />
@@ -258,89 +328,105 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
         )}
       />
 
-      <div className="flex items-start justify-between space-x-2">
-        <FormField
-          control={form.control}
-          name="identityDocument.postfix"
-          render={({ field }) => (
-            <FormItem className="w-full">
-              <FormLabel>{t("fields.documentPostfix")}</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("fields.select")} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="AD">{t("fields.AD")}</SelectItem>
-                  <SelectItem value="CE">{t("fields.CE")}</SelectItem>
-                  <SelectItem value="ES">{t("fields.ES")}</SelectItem>
-                  <SelectItem value="EN">{t("fields.EN")}</SelectItem>
-                  <SelectItem value="LT">{t("fields.LT")}</SelectItem>
-                  <SelectItem value="NO">{t("fields.NO")}</SelectItem>
-                  <SelectItem value="OU">{t("fields.OU")}</SelectItem>
-                  <SelectItem value="SU">{t("fields.SU")}</SelectItem>
-                  <SelectItem value="NW">{t("fields.NW")}</SelectItem>
-                  <SelectItem value="SW">{t("fields.SW")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
+      {identityDocumentType == "TRADE_REGISTER"
+        ? (<FormField
           control={form.control}
           name="identityDocument.number"
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel>Document Number</FormLabel>
+              <FormLabel>{t("fields.traderegister.label")}</FormLabel>
               <FormControl>
-                <Input placeholder="Enter document number" {...field} />
+                <Input
+                  placeholder={t("fields.traderegister.placeholder")}
+                  {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-      </div>
+        )
+        : (
+          <div className="col-span-2 md:col-span-1 gap-6" key={`identityDocument.postfix.${identityDocumentType}`}>
+            <div className="flex flex-col md:flex-row  items-start justify-between space-x-2">
+              <FormField
+                control={form.control}
+                name="identityDocument.postfix.post"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>{t("fields.documentPostfix")}</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t("fields.select")} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="AD">{t("fields.AD")}</SelectItem>
+                        <SelectItem value="CE">{t("fields.CE")}</SelectItem>
+                        <SelectItem value="ES">{t("fields.ES")}</SelectItem>
+                        <SelectItem value="EN">{t("fields.EN")}</SelectItem>
+                        <SelectItem value="LT">{t("fields.LT")}</SelectItem>
+                        <SelectItem value="NO">{t("fields.NO")}</SelectItem>
+                        <SelectItem value="OU">{t("fields.OU")}</SelectItem>
+                        <SelectItem value="SU">{t("fields.SU")}</SelectItem>
+                        <SelectItem value="NW">{t("fields.NW")}</SelectItem>
+                        <SelectItem value="SW">{t("fields.SW")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="identityDocument.postfix.code"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Code</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="00"
+                        {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="identityDocument.number"
+              render={({ field }) => (
+                <FormItem className="w-full mt-5">
+                  <FormLabel>{t("fields.identityDocument.label")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={t("fields.identityDocument.placeholder")}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+        )
+      }
 
       <FormField
         control={form.control}
         name="identityDocument.validityDate"
         render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel>Document Validity Date</FormLabel>
-            <Popover>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full pl-3 text-left font-normal",
-                      !field.value && "text-muted-foreground"
-                    )}
-                  >
-                    {field.value ? (
-                      format(field.value, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={field.value}
-                  onSelect={field.onChange}
-                  disabled={(date) =>
-                    date > new Date() || date < new Date("1900-01-01")
-                  }
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+          <FormItem className="col-span-2 md:col-span-1 flex flex-col">
+            <FormLabel>{t("fields.identityDocument.validityDate")}</FormLabel>
+            <CalenderValidity
+              key={`identityDocument.validityDate.calendar`}
+              date={field.value}
+              setDate={field.onChange}
+              placeholder={t("fields.pickDate")}
+            />
             <FormMessage />
           </FormItem>
         )}
@@ -350,14 +436,15 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
         <FormField
           control={form.control}
           name="identityDocument.frontImage"
-          render={({ field: { onChange, value, ...field } }) => (
-            <FormItem>
-              <FormLabel>ID Front Image</FormLabel>
+          render={({ field }) => (
+            <FormItem >
+              <FormLabel>{t("fields.identityDocument.frontfile")}</FormLabel>
               <FormControl>
                 <FileUpload
-                  onFileSelect={onChange}
+                  onFileSelect={field.onChange}
+                  value={field.value}
                   accept={{ 'image/*': ['.png', '.jpg', '.jpeg'] }}
-                  label="Upload ID front image"
+                  label={t("fields.identityDocument.frontlabel")}
                 />
               </FormControl>
               <FormMessage />
@@ -368,14 +455,15 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
         <FormField
           control={form.control}
           name="identityDocument.backImage"
-          render={({ field: { onChange, value, ...field } }) => (
+          render={({ field }) => (
             <FormItem>
-              <FormLabel>ID Back Image</FormLabel>
+              <FormLabel>{t("fields.identityDocument.backfile")}</FormLabel>
               <FormControl>
                 <FileUpload
-                  onFileSelect={onChange}
+                  onFileSelect={field.onChange}
+                  value={field.value}
                   accept={{ 'image/*': ['.png', '.jpg', '.jpeg'] }}
-                  label="Upload ID back image"
+                  label={t("fields.identityDocument.backlabel")}
                 />
               </FormControl>
               <FormMessage />
@@ -387,17 +475,19 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
       <Separator className=" col-span-2 w-full" />
 
       <div className="col-span-full space-y-6">
-        <h2 className="text-lg font-semibold">Unique Identity Number (NIU) </h2>
+        <h2 className="text-lg font-semibold">{t("fields.uniqueIdentityNumber")} </h2>
       </div>
 
       <FormField
         control={form.control}
         name="nuiDocument.number"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>NUI Document Number</FormLabel>
+          <FormItem className="col-span-2 md:col-span-1">
+            <FormLabel>{t("fields.nuiDocumentNumber")}</FormLabel>
             <FormControl>
-              <Input placeholder="Enter NUI document number" {...field} />
+              <Input
+                placeholder={t("fields.nuiDocumentNumberPlaceholder")}
+                {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -407,14 +497,15 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
       <FormField
         control={form.control}
         name="nuiDocument.file"
-        render={({ field: { onChange, value, ...field } }) => (
+        render={({ field }) => (
           <FormItem>
-            <FormLabel>NUI file</FormLabel>
+            <FormLabel>{t("fields.nuiFile")}</FormLabel>
             <FormControl>
               <FileUpload
-                onFileSelect={onChange}
+                onFileSelect={field.onChange}
+                value={field.value}
                 accept={{ 'image/*': ['.png', '.jpg', '.jpeg'], 'application/pdf': ['.pdf'] }}
-                label="Upload ID front image or PDF"
+                label={t("fields.uploadNuiFile")}
               />
             </FormControl>
             <FormMessage />
@@ -422,14 +513,13 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
         )}
       />
 
+    </div>,
 
-
-    </>
-  );
-
-  const ContactFields = () => (
-    <>
-      <div className="col-span-full space-y-6">
+    <div
+      key={2}
+      className="grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
+      <div className="col-span-2 md:col-span-full space-y-6">
         <h2 className="text-lg font-semibold">Contact Information</h2>
       </div>
 
@@ -516,7 +606,7 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
         control={form.control}
         name="email"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="col-span-2 md:col-span-1">
             <FormLabel>Email Address</FormLabel>
             <FormControl>
               <Input type="email" placeholder="your@email.com" {...field} />
@@ -527,13 +617,17 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
       />
 
       <FormField
+        key={"location.reference"}
         control={form.control}
         name="location.reference"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="col-span-2 md:col-span-1">
             <FormLabel>Location Reference</FormLabel>
             <FormControl>
-              <Input placeholder="Enter location reference" {...field} />
+              <Input
+                placeholder="Enter location reference"
+                {...field}
+              />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -544,7 +638,7 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
         control={form.control}
         name="location.gpsCoordinates"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="col-span-2 md:col-span-1">
             <FormLabel>GPS Coordinates</FormLabel>
             <FormControl>
               <div className="relative">
@@ -580,125 +674,158 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
           </FormItem>
         )}
       />
-    </>
-  );
+    </div>,
 
-  const MeterFields = () => {
-
-    return (
-      <>
-        <div className="col-span-full space-y-6">
-          <h2 className="text-lg font-semibold">Contract Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="contract.number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contract Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter 10-digit contract number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="contract.status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="contract.customerStatus"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer Status</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="landlord">Landlord</SelectItem>
-                      <SelectItem value="tenant">Tenant</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="contract.usageType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type of Usage</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select usage type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="residential">Residential</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-
+    <div
+      key={3}
+      className="grid grid-cols-1 md:grid-cols-2 gap-6"
+    >
+      <div className="col-span-full space-y-6">
+        <h2 className="text-lg font-semibold">{t("fields.contract.title")}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="contract.activity"
+            name="contract.number"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Activity</FormLabel>
+                <FormLabel>{t("fields.contract.number.label")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter activity" {...field} />
+                  <Input
+                    placeholder={t("fields.contract.number.placeholder")}
+                    {...field}
+                    onBlur={(e) => {
+                      field.onBlur();
+                      handleContractBlur(e);
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <h2 className="text-lg font-semibold pt-6">Meter Details</h2>
+          <FormField
+            control={form.control}
+            name="contract.status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fields.contract.status.label")}</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={t("fields.contract.status.placeholder")}
+                      />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="active">{t("fields.contract.status.active")}</SelectItem>
+                    <SelectItem value="inactive">{t("fields.contract.status.inactive")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <FormField
+            control={form.control}
+            name="contract.customerStatus"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fields.contract.customerStatus.label")}</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("fields.contract.customerStatus.placeholder")} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="landlord">{t("fields.contract.customerStatus.landlord")}</SelectItem>
+                    <SelectItem value="tenant">{t("fields.contract.customerStatus.tenant")}</SelectItem>
+                    <SelectItem value="other">{t("fields.contract.customerStatus.other")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="contract.usageType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t("fields.contract.usageType.label")}</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("fields.contract.usageType.placeholder")} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="residential">{t("fields.contract.usageType.residential")}</SelectItem>
+                    <SelectItem value="commercial">{t("fields.contract.usageType.commercial")}</SelectItem>
+                    <SelectItem value="other">{t("fields.contract.usageType.other")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+
+        <FormField
+          key="contract.activity"
+          control={form.control}
+          name="contract.activity"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t("fields.contract.activity.label")}</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder={t("fields.contract.activity.placeholder")}
+                  {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <h2 className="text-lg font-semibold pt-6">{t("fields.contract.meterDetails.title")}</h2>
+
+        <FormField
+          control={form.control}
+          name="contract.hasMeterDetails"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel>{t("fields.contract.meterDetails.toggle")}</FormLabel>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        {hasMeterDetails
+          &&
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <FormField
               control={form.control}
               name="contract.meterDetails.number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Meter Number</FormLabel>
+                  <FormLabel>{t("fields.contract.meterDetails.number.label")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter meter number" {...field} />
+                    <Input
+                      placeholder={t("fields.contract.meterDetails.number.placeholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -710,16 +837,16 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
               name="contract.meterDetails.status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>{t("fields.contract.status.label")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t("fields.contract.status.placeholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="active">{t("fields.contract.status.active")}</SelectItem>
+                      <SelectItem value="inactive">{t("fields.contract.status.inactive")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -732,9 +859,10 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
               name="contract.meterDetails.characteristics"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Meter Characteristics</FormLabel>
+                  <FormLabel>{t("fields.contract.meterDetails.characteristics.label")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter meter characteristics" {...field} />
+                    <Input placeholder={t("fields.contract.meterDetails.characteristics.placeholder")}
+                      {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -746,11 +874,11 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
               name="contract.meterDetails.type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Meter Type</FormLabel>
+                  <FormLabel>{t("fields.contract.meterDetails.type.label")}</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select meter type" />
+                        <SelectValue placeholder={t("fields.contract.meterDetails.type.placeholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -769,9 +897,11 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
               name="contract.meterDetails.itineraryNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Itinerary Number</FormLabel>
+                  <FormLabel>{t("fields.contract.meterDetails.itineraryNumber.label")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter itinerary number" {...field} />
+                    <Input
+                      placeholder={t("fields.contract.meterDetails.itineraryNumber.placeholder")}
+                      {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -783,9 +913,12 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
               name="contract.meterDetails.transformerPower"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Transformer Power</FormLabel>
+                  <FormLabel>
+                    {t("fields.contract.meterDetails.transformerPower.label")}
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter transformer power" {...field} />
+                    <Input placeholder={t("fields.contract.meterDetails.transformerPower.placeholder")}
+                      {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -797,203 +930,199 @@ export const KYCFormFields  = ({ form, currentStep }: KYCFormFieldsProps) => {
               name="contract.meterDetails.voltage"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Voltage</FormLabel>
+                  <FormLabel>{t("fields.contract.meterDetails.voltage.label")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter voltage" {...field} />
+                    <Input placeholder={t("fields.contract.meterDetails.voltage.placeholder")}
+                      {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
+        }
 
+        <h2 className="text-lg font-semibold pt-6">{t("fields.contract.otherContracts.title")}</h2>
+
+        <FormField
+          control={form.control}
+          name="otherContracts.hasOther"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel>{t("fields.contract.otherContracts.toggle")}</FormLabel>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {hasOtherContracts && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Other Contract Numbers</h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addContractNumber}
+                className="flex items-center gap-1 text-[#14689E] border-[#14689E] hover:bg-[#14689E] hover:text-white"
+              >
+                <Plus className="h-4 w-4" />{t("fields.contract.otherContracts.add")}
+              </Button>
+            </div>
+
+            {otherContractNumbers.length === 0 && (
+              <p className="text-sm text-muted-foreground">{t("fields.contract.otherContracts.empty")}</p>
+            )}
+
+            {otherContractNumbers.map((_: string, index: number) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  {/* Champ pour le numéro de contrat */}
+                  <FormField
+                    control={form.control}
+                    name={`otherContracts.numbers.${index}`}
+                    render={({ field }: { field: any }) => (
+                      <FormItem className="w-full">
+                        <FormLabel className="text-sm text-gray-600">{t("fields.contract.otherContracts.numberLabel")} {index + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter 10-digit contract number"
+                            className="w-full"
+                            {...field}
+                            onBlur={(e) => {
+                              field.onBlur();
+                              handleContractBlur(e, `otherContracts.numbers.${index}`);
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500 text-sm" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Bouton de suppression */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeContractNumber(index)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 mt-2 md:mt-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Champs liés pour "Type of Usage" et "Meter Details" */}
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Meter Number */}
+                  <FormField
+                    control={form.control}
+                    name={`otherContracts.meterDetails.${index}.number`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">{t("fields.contract.otherContracts.meterNumber")} {index + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter meter number"
+                            {...field}
+                            className="w-full"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500 text-sm" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Type of Usage */}
+                  <FormField
+                    control={form.control}
+                    name={`otherContracts.usageType.${index}`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">{t("fields.contract.otherContracts.usageType")} {index + 1}</FormLabel>
+                        <Select onValueChange={field.onChange}>
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select usage type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="residential">Residential</SelectItem>
+                            <SelectItem value="commercial">Commercial</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className="text-red-500 text-sm" />
+                      </FormItem>
+                    )}
+                  />
+
+
+                </div>
+
+                {/* Autres champs liés (optionnels) */}
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Itinerary Number */}
+                  <FormField
+                    control={form.control}
+                    name={`otherContracts.meterDetails.${index}.itineraryNumber`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Itinerary Number {index + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter itinerary number"
+                            {...field}
+                            className="w-full"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500 text-sm" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Transformer Power */}
+                  <FormField
+                    control={form.control}
+                    name={`otherContracts.meterDetails.${index}.transformerPower`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm text-gray-600">Transformer Power {index + 1}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter transformer power"
+                            {...field}
+                            className="w-full"
+                          />
+                        </FormControl>
+                        <FormMessage className="text-red-500 text-sm" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            ))}
 
           </div>
+        )}
 
-
-          <FormField
-            control={form.control}
-            name="otherContracts.hasOther"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                <div className="space-y-0.5">
-                  <FormLabel>Have Other Contracts?</FormLabel>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-
-          {hasOtherContracts && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium">Other Contract Numbers</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addContractNumber}
-                  className="flex items-center gap-1 text-[#14689E] border-[#14689E] hover:bg-[#14689E] hover:text-white"
-                >
-                  <Plus className="h-4 w-4" /> Add Contract
-                </Button>
-              </div>
-
-              {otherContractNumbers.length === 0 && (
-                <p className="text-sm text-muted-foreground">No other contracts added yet.</p>
-              )}
-
-              {otherContractNumbers.map((_: string, index: number) => (
-                <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                    {/* Champ pour le numéro de contrat */}
-                    <FormField
-                      control={form.control}
-                      name={`otherContracts.numbers.${index}`}
-                      render={({ field }: { field: any }) => (
-                        <FormItem className="w-full">
-                          <FormLabel className="text-sm text-gray-600">Contract Number {index + 1}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter 10-digit contract number"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500 text-sm" />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Bouton de suppression */}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeContractNumber(index)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 mt-2 md:mt-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  {/* Champs liés pour "Type of Usage" et "Meter Details" */}
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {/* Meter Number */}
-                    <FormField
-                      control={form.control}
-                      name={`otherContracts.meterDetails.${index}.number`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm text-gray-600">Meter Number {index + 1}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter meter number"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500 text-sm" />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Type of Usage */}
-                    <FormField
-                      control={form.control}
-                      name={`otherContracts.usageType.${index}`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm text-gray-600">Type of Usage {index + 1}</FormLabel>
-                          <Select onValueChange={field.onChange}>
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Select usage type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="residential">Residential</SelectItem>
-                              <SelectItem value="commercial">Commercial</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage className="text-red-500 text-sm" />
-                        </FormItem>
-                      )}
-                    />
-
-
-                  </div>
-
-                  {/* Autres champs liés (optionnels) */}
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Itinerary Number */}
-                    <FormField
-                      control={form.control}
-                      name={`otherContracts.meterDetails.${index}.itineraryNumber`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm text-gray-600">Itinerary Number {index + 1}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter itinerary number"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500 text-sm" />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Transformer Power */}
-                    <FormField
-                      control={form.control}
-                      name={`otherContracts.meterDetails.${index}.transformerPower`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm text-gray-600">Transformer Power {index + 1}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter transformer power"
-                              {...field}
-                              className="w-full"
-                            />
-                          </FormControl>
-                          <FormMessage className="text-red-500 text-sm" />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              ))}
-
-            </div>
-          )}
-
-        </div>
-      </>
-    )
-  };
-
-  const stepComponents = [
-    PersonalInfoFields,
-    IdentityFields,
-    ContactFields,
-    MeterFields,
+      </div>
+    </div>
   ];
 
   const CurrentStep = stepComponents[currentStep];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <CurrentStep />
+    <div>
+      {CurrentStep}
     </div>
   );
 };
-

@@ -111,12 +111,12 @@
       "gpsCoordinatesPlaceholder": "Entrez les coordonnées GPS",
       "contractInformation": "Informations sur le contrat",
       "contractNumber": "Numéro de contrat",
-      "contractNumberPlaceholder": "Entrez un numéro de contrat à 10 chiffres",
+      "contractNumberPlaceholder": "Entrez un numéro de contrat à 09 chiffres",
       "contract": {
         "title": "Informations du contrat",
         "number": {
           "label": "Numéro de contrat",
-          "placeholder": "Saisir un numéro de contrat de 10 chiffres"
+          "placeholder": "Saisir un numéro de contrat de 09 chiffres"
         },
         "status": {
           "label": "Statut",
@@ -269,7 +269,7 @@
       },
       "contract": {
         "numberRequired": "Le numéro de contrat est requis.",
-        "invalid": "Le numéro de contrat doit contenir exactement 10 chiffres.",
+        "invalid": "Le numéro de contrat doit contenir exactement 9 chiffres.",
         "notFound": "Ce numéro de contrat n'existe pas"
       }
     }

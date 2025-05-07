@@ -111,12 +111,12 @@
             "gpsCoordinatesPlaceholder": "Enter GPS coordinates",
             "contractInformation": "Contract Information",
             "contractNumber": "Contract Number",
-            "contractNumberPlaceholder": "Enter 10-digit contract number",
+            "contractNumberPlaceholder": "Enter 9-digit contract number",
             "contract": {
                 "title": "Contract Information",
                 "number": {
                     "label": "Contract Number",
-                    "placeholder": "Enter 10-digit contract number"
+                    "placeholder": "Enter 9-digit contract number"
                 },
                 "status": {
                     "label": "Status",
@@ -275,7 +275,7 @@
             },
             "contract": {
                 "numberRequired": "Contract Number is required.",
-                "invalid": "Contract number must be exactly 10 digits.",
+                "invalid": "Contract number must be exactly 9 digits.",
                 "notFound": "Contract not found in our system"
             }
         }

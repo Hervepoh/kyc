@@ -20,20 +20,22 @@ export function getDefaultFormValues() {
     lastName: "",
     gender: undefined,
     dateOfBirth: undefined,
-    identityDocument: {
+    document: {
       type: undefined,
-      postfix: {
-        code: "",
-        post: undefined
+      identityDocument: {
+        postfix: {
+          code: "",
+          post: undefined
+        },
+        number: "",
+        validityDate: undefined,
+        frontImage: undefined,
+        backImage: undefined,
       },
-      number: "",
-      validityDate: undefined,
-      frontImage: undefined,
-      backImage: undefined,
-    },
-    nuiDocument: {
-      number: "",
-      file: undefined,
+      nuiDocument: {
+        number: "",
+        file: undefined,
+      },
     },
     phoneNumbers: [{ number: "", isWhatsapp: false }],
     email: "",
@@ -43,7 +45,7 @@ export function getDefaultFormValues() {
     },
     contract: {
       number: "",
-      status: undefined as ContractStatus | undefined,
+      status: "active" as ContractStatus,
       customerStatus: "tenant" as CustomerStatus,
       usageType: undefined as UsageType | undefined,
       activity: "",
@@ -58,7 +60,12 @@ export function getDefaultFormValues() {
         voltage: ""
       }
     },
-    otherContracts: {}
+    otherContracts: {
+      hasOtherContracts: false,
+      numbers: [],
+      usageType: [],
+      meterDetails: []
+    }
   };
 }
 

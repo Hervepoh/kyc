@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UseFormReturn } from "react-hook-form";
 import { MapPin, Plus, Trash2 } from "lucide-react";
@@ -29,8 +29,6 @@ import { CalenderBirthDay } from "@/components/ui/calendar-birthday";
 import { CalenderValidity } from "@/components/ui/calendar-validity";
 import { FileUpload } from "@/components/file-upload";
 
-import { checkContractExists, cn } from "@/lib/utils";
-
 
 interface KYCFormFieldsProps {
   form: UseFormReturn<any>;
@@ -40,8 +38,12 @@ interface KYCFormFieldsProps {
 export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
   const t = useTranslations("kycForm");
 
+
   const isMoralEntity = form.watch("isMoralEntity");
-  const identityDocumentType = form.watch("identityDocument.type");
+  const identityDocumentType = form.watch("document.type");
+
+  const [prevType, setPrevType] = useState(identityDocumentType);
+  const [prevIsMoral, setPrevIsMoral] = useState(isMoralEntity);
 
   // Phone 
   const phoneNumbers = form.watch("phoneNumbers") || [];
@@ -64,8 +66,11 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
 
   // Meter 
   const hasMeterDetails = form.watch("contract.hasMeterDetails");
-  const hasOtherContracts = form.watch("otherContracts.hasOther");
+  const hasOtherContracts = form.watch("otherContracts.hasOtherContracts");
   const otherContractNumbers = form.watch("otherContracts.numbers") || [];
+
+  const [prevHasMeterDetails, setHasMeterDetails] = useState(hasMeterDetails);
+  const [prevHasOtherContracts, setHasOtherContracts] = useState(hasOtherContracts);
 
   const addContractNumber = React.useCallback(() => {
     const currentNumbers = form.getValues("otherContracts.numbers") || [];
@@ -80,57 +85,63 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
   }, [form]);
 
 
-  async function handleContractBlur(e: React.FocusEvent<HTMLInputElement>, field = 'contract.number') {
-    const contractNumber = e.target.value;
-
-    if (!contractNumber) return;
-
-    const exists = await checkContractExists(contractNumber);
-
-    if (!exists) {
-      form.setError(field, {
-        type: 'manual',
-        message: t('errors.contract.notFound'), // dans ton fichier de traduction
-      });
-    } else {
-      form.clearErrors(field);
+  useEffect(() => {
+    if (prevIsMoral != isMoralEntity) {
+      if (isMoralEntity) {
+        form.resetField("firstName");
+        form.setValue("document.type", "TRADE_REGISTER");
+        form.setValue("gender", "company");
+      } else {
+        form.setValue("document.type", "CNI");
+        form.setValue("gender", undefined);
+      }
+      setPrevIsMoral(isMoralEntity);
     }
-  }
+
+    // form.setValue("dateOfBirth", null, { shouldValidate: false, shouldDirty: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMoralEntity]);
+
 
   useEffect(() => {
-    if (isMoralEntity) {
-      form.resetField("firstName");
-      form.resetField("lastName");
-      form.resetField("gender");
-      form.resetField("dateOfBirth");
-      form.setValue("identityDocument.type", "TRADE_REGISTER");
-      form.setValue("gender", "company");
-    } else {
-      form.setValue("gender", undefined);
-      form.resetField("lastName"); // Company name est dans lastName
-      form.resetField("dateOfBirth");
-      form.setValue("identityDocument.type", "CNI");
+    if (prevType != identityDocumentType) {
+      // Réinitialise les champs lorsque le type change
+      if (identityDocumentType) {
+        // Réinitialiser tous les autres champs
+        form.setValue("document.identityDocument.number", "");
+        //form.setValue("document.identityDocument.postfix", { post: "", code: "" }, { shouldValidate: false, shouldDirty: false });
+        form.resetField("document.identityDocument.postfix.post");
+        form.resetField("document.identityDocument.postfix.code");
+        form.setValue("document.identityDocument.validityDate", null, { shouldValidate: false, shouldDirty: false });
+        // Réinitialiser les erreurs de validation
+        form.clearErrors("document.identityDocument.number");
+        form.clearErrors("document.identityDocument.postfix");
+        form.clearErrors("document.identityDocument.validityDate");
+
+        // form.resetField("document.identityDocument.frontImage");
+        // form.resetField("document.identityDocument.backImage", undefined);
+        setPrevType(identityDocumentType);
+      }
     }
-    form.setValue("dateOfBirth", null, { shouldValidate: false, shouldDirty: false });
-  }, [isMoralEntity, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [identityDocumentType]);
 
   useEffect(() => {
-    // Réinitialise les champs lorsque le type change
-    if (identityDocumentType) {
-      // Réinitialiser tous les autres champs
-      form.setValue("identityDocument.number", "");
-      form.setValue("identityDocument.postfix", { post: "", code: "" }, { shouldValidate: false, shouldDirty: false });
-      form.setValue("identityDocument.validityDate", null, { shouldValidate: false, shouldDirty: false });
-      // Réinitialiser les erreurs de validation
-      form.clearErrors("identityDocument.number");
-      form.clearErrors("identityDocument.postfix");
-      form.clearErrors("identityDocument.validityDate");
+    if (prevHasOtherContracts != hasOtherContracts) {
+      if (hasOtherContracts) {
 
-      form.resetField("identityDocument.frontImage");
-      form.resetField("identityDocument.backImage", undefined);
+
+      } else {
+        form.resetField("otherContracts.numbers");
+        form.resetField("otherContracts.usageTypes");
+        form.resetField("otherContracts.meterDetails");
+      }
+      setHasOtherContracts(hasOtherContracts);
     }
-  }, [identityDocumentType, form]);
 
+    // form.setValue("dateOfBirth", null, { shouldValidate: false, shouldDirty: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMoralEntity]);
 
 
   const stepComponents = [
@@ -298,7 +309,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
       <FormField
         key={"identityDocument.type"}
         control={form.control}
-        name="identityDocument.type"
+        name="document.type"
         render={({ field }) => (
           <FormItem className="col-span-2 md:col-span-1">
             <FormLabel>{t("fields.identityDocumentType")}</FormLabel>
@@ -331,7 +342,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
       {identityDocumentType == "TRADE_REGISTER"
         ? (<FormField
           control={form.control}
-          name="identityDocument.number"
+          name="document.identityDocument.number"
           render={({ field }) => (
             <FormItem className="w-full">
               <FormLabel>{t("fields.traderegister.label")}</FormLabel>
@@ -350,7 +361,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
             <div className="flex flex-col md:flex-row  items-start justify-between space-x-2">
               <FormField
                 control={form.control}
-                name="identityDocument.postfix.post"
+                name="document.identityDocument.postfix.post"
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>{t("fields.documentPostfix")}</FormLabel>
@@ -379,7 +390,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
               />
               <FormField
                 control={form.control}
-                name="identityDocument.postfix.code"
+                name="document..identityDocument.postfix.code"
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Code</FormLabel>
@@ -396,7 +407,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
 
             <FormField
               control={form.control}
-              name="identityDocument.number"
+              name="document.identityDocument.number"
               render={({ field }) => (
                 <FormItem className="w-full mt-5">
                   <FormLabel>{t("fields.identityDocument.label")}</FormLabel>
@@ -417,7 +428,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
 
       <FormField
         control={form.control}
-        name="identityDocument.validityDate"
+        name="document.identityDocument.validityDate"
         render={({ field }) => (
           <FormItem className="col-span-2 md:col-span-1 flex flex-col">
             <FormLabel>{t("fields.identityDocument.validityDate")}</FormLabel>
@@ -435,7 +446,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
-          name="identityDocument.frontImage"
+          name="document.identityDocument.frontImage"
           render={({ field }) => (
             <FormItem >
               <FormLabel>{t("fields.identityDocument.frontfile")}</FormLabel>
@@ -454,7 +465,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
 
         <FormField
           control={form.control}
-          name="identityDocument.backImage"
+          name="document.identityDocument.backImage"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t("fields.identityDocument.backfile")}</FormLabel>
@@ -480,7 +491,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
 
       <FormField
         control={form.control}
-        name="nuiDocument.number"
+        name="document.nuiDocument.number"
         render={({ field }) => (
           <FormItem className="col-span-2 md:col-span-1">
             <FormLabel>{t("fields.nuiDocumentNumber")}</FormLabel>
@@ -496,7 +507,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
 
       <FormField
         control={form.control}
-        name="nuiDocument.file"
+        name="document.nuiDocument.file"
         render={({ field }) => (
           <FormItem>
             <FormLabel>{t("fields.nuiFile")}</FormLabel>
@@ -695,7 +706,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
                     {...field}
                     onBlur={(e) => {
                       field.onBlur();
-                      handleContractBlur(e);
+                      // handleContractBlur(e);
                     }}
                   />
                 </FormControl>
@@ -946,7 +957,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
 
         <FormField
           control={form.control}
-          name="otherContracts.hasOther"
+          name="otherContracts.hasOtherContracts"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
@@ -993,12 +1004,12 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
                         <FormLabel className="text-sm text-gray-600">{t("fields.contract.otherContracts.numberLabel")} {index + 1}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Enter 10-digit contract number"
+                            placeholder={t("fields.contract.number.placeholder")}
                             className="w-full"
                             {...field}
                             onBlur={(e) => {
                               field.onBlur();
-                              handleContractBlur(e, `otherContracts.numbers.${index}`);
+                              //handleContractBlur(e, `otherContracts.numbers.${index}`);
                             }}
                           />
                         </FormControl>
@@ -1031,7 +1042,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
                         <FormLabel className="text-sm text-gray-600">{t("fields.contract.otherContracts.meterNumber")} {index + 1}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Enter meter number"
+                            placeholder={t("fields.contract.meterDetails.number.placeholder")}
                             {...field}
                             className="w-full"
                           />
@@ -1044,7 +1055,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
                   {/* Type of Usage */}
                   <FormField
                     control={form.control}
-                    name={`otherContracts.usageType.${index}`}
+                    name={`otherContracts.usageTypes.${index}`}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm text-gray-600">{t("fields.contract.otherContracts.usageType")} {index + 1}</FormLabel>

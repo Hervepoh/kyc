@@ -21,10 +21,10 @@ export async function POST(request: NextRequest) {
     const fullName = [firstName, lastName].filter(Boolean).join(' ') || '';
     const gender = parsedData.gender;
     const dateOfBirth = new Date(parsedData.dateOfBirth);
-    const idType = parsedData.identityDocument.type;
-    const idNumber = parsedData.identityDocument.number;
-    const idValidityDate = new Date(parsedData.identityDocument.validityDate);
-    const niuNumber = parsedData.nuiDocument.number;
+    const idType = parsedData.document.type;
+    const idNumber = parsedData.document.identityDocument.number;
+    const idValidityDate = new Date(parsedData.document.identityDocument.validityDate);
+    const niuNumber = parsedData.document.nuiDocument.number;
     const locationReference = parsedData.location.reference?.trim();
     const gpsCoordinates = parsedData.location.gpsCoordinates?.trim();
     const email = parsedData.email?.trim();

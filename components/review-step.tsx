@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
 interface ReviewStepProps {
   formData: any;
@@ -28,7 +29,7 @@ export function ReviewStep({ formData }: ReviewStepProps) {
   };
 
   const formatOtherContracts = (otherContracts: any) => {
-    if (!otherContracts || !otherContracts.hasOther) {
+    if (!otherContracts || !otherContracts.hasOtherContracts) {
       return "No other contracts";
     }
 
@@ -75,26 +76,23 @@ export function ReviewStep({ formData }: ReviewStepProps) {
     {
       title: "Identity Documents",
       fields: [
-        { label: t('fields.identityDocumentType'), value: formData.identityDocument?.type },
-        { label: t('fields.documentNumber'), value: formData.identityDocument?.number },
+        { label: t('fields.identityDocumentType'), value: formData.document?.type },
+        { label: t('fields.documentNumber'), value: formData.document.identityDocument?.number },
         {
           label: t('fields.documentValidityDate'),
-          value: formatDate(formData.identityDocument?.validityDate),
+          value: formatDate(formData.document.identityDocument?.validityDate),
           isDate: true
         },
-        { label: t('fields.uniqueIdentityNumber'), value: formData.nuiDocument.number },
+        { label: t('fields.uniqueIdentityNumber'), value: formData.document.nuiDocument.number },
       ],
     },
     {
       title: "Contact Information",
       fields: [
-        {
-          label: "Phone Numbers",
-          value: formatPhoneNumbers(formData.phoneNumbers)
-        },
+        { label: "Phone Numbers", value: formatPhoneNumbers(formData.phoneNumbers) },
         { label: "Email", value: formData.email },
-        { label: "Location Reference", value: formData.location?.reference || "Not provided" },
-        { label: "GPS Coordinates", value: formData.location?.gpsCoordinates || "Not provided" },
+        { label: "Location Reference", value: formData.location?.reference },
+        { label: "GPS Coordinates", value: formData.location?.gpsCoordinates },
       ],
     },
     {
@@ -104,14 +102,14 @@ export function ReviewStep({ formData }: ReviewStepProps) {
         { label: "Other Contracts", value: formatOtherContracts(formData.otherContracts) },
         { label: "Usage Type", value: formData.contract.usageType },
         { label: "Customer Status", value: formData.contract.customerStatus },
-        { label: "Activity", value: formData.contract.activity || "Not provided" },
-        { label: "Meter Number", value: formData.contract.meterDetails?.number || "Not provided" },
+        { label: "Activity", value: formData.contract.activity },
+        { label: "Meter Number", value: formData.contract.meterDetails?.number },
         { label: "Meter Type", value: formData.contract.meterDetails?.type },
         { label: "Meter Status", value: formData.contract.meterDetails?.status },
-        { label: "Meter Characteristics", value: formData.contract.meterDetails?.characteristics || "Not provided" },
-        { label: "Itinerary Number", value: formData.contract.meterDetails?.itineraryNumber || "Not provided" },
-        { label: "Transformer Power", value: formData.contract.meterDetails?.transformerPower || "Not provided" },
-        { label: "Voltage", value: formData.contract.meterDetails?.voltage || "Not provided" },
+        { label: "Meter Characteristics", value: formData.contract.meterDetails?.characteristics },
+        { label: "Itinerary Number", value: formData.contract.meterDetails?.itineraryNumber },
+        { label: "Transformer Power", value: formData.contract.meterDetails?.transformerPower },
+        { label: "Voltage", value: formData.contract.meterDetails?.voltage },
       ],
     },
   ];
@@ -128,7 +126,9 @@ export function ReviewStep({ formData }: ReviewStepProps) {
               {section.fields.map((field, fieldIndex) => (
                 <div key={fieldIndex} className="space-y-1">
                   <dt className="text-sm font-medium text-gray-500">{field.label}</dt>
-                  <dd className="text-sm text-gray-900">{field.value}</dd>
+                  <dd className={cn("text-sm",
+                    field.value ? "text-gray-900" : "text-red-500"
+                  )}>{field.value || t('errors.NotProvided')}</dd>
                 </div>
               ))}
             </dl>

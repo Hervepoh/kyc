@@ -221,6 +221,7 @@
     },
     "errors": {
       "fillAll": "Veuillez remplir correctement tous les champs requis",
+      "NotProvided": "Non renseigne",
       "required": "Ce champ est requis",
       "invalidName": "Le nom ne doit pas contenir de caractères spéciaux",
       "invalidPhone": "Numéro de téléphone invalide",
@@ -261,6 +262,7 @@
         "required": "Le numéro NIU est requis.",
         "length": "Le NIU doit comporter 14 caractères.",
         "format": "Le NIU doit commencer par P ou M, suivi de 12 chiffres et se terminer par une lettre.",
+        "formatMoral": "Le NIU doit commencer par M, suivi de 12 chiffres et se terminer par une lettre.",
         "fileRequired": "Le fichier NIU est requis."
       },
       "phone": {

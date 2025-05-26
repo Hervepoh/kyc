@@ -8,7 +8,7 @@ import { useWindowSize } from "react-use";
 import { useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Badge, Loader, MessageCircleWarning, PenBox, Search } from "lucide-react";
+import { Badge, Loader, Loader2, MessageCircleWarning, PenBox, Search } from "lucide-react";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import { KYCFormFields } from "@/components/kyc-form-fields";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
-import { createFormSchema, stepValidationSchemas } from "@/schema/kycSchema";
+import { createFormSchema, createStepFormSchema,  } from "@/schema/kycSchema";
 import { buildCustomerFormValues, Customer, getDefaultFormValues } from "@/helpers/kyc";
 
 import { cn, fetchCustomer } from "@/lib/utils";
@@ -87,15 +87,22 @@ export default function Home() {
 
   const nextStep = async () => {
     if (currentStep < formSteps.length - 1) {
-      const currentSchema = stepValidationSchemas[currentStep];
+      const currentSchema = createStepFormSchema(t)[currentStep];
       const formValues = form.getValues();
 
       try {
-        currentSchema.parse(formValues);
+        if (currentStep === 3) {
+          await currentSchema.parseAsync(formValues);
+          console.log(await currentSchema.parseAsync(formValues))
+        } else {
+          currentSchema.parse(formValues);
+          console.log(currentSchema.parse(formValues))
+        }
         setCurrentStep((current) => current + 1);
       } catch (error) {
         await form.trigger(); // Déclencher la validation
         toast.error(t("kycForm.errors.fillAll"));
+        console.log("CurrentStep validation errors:", error)
       }
     }
   };
@@ -117,16 +124,16 @@ export default function Home() {
       formData.append('formData', JSON.stringify(values));
 
       // Ajouter les fichiers s'ils existent
-      if (values.identityDocument.frontImage) {
-        formData.append('idFrontImage', values.identityDocument.frontImage);
+      if (values.document.identityDocument.frontImage) {
+        formData.append('idFrontImage', values.document.identityDocument.frontImage);
       }
 
-      if (values.identityDocument.backImage) {
-        formData.append('idBackImage', values.identityDocument.backImage);
+      if (values.document.identityDocument.backImage) {
+        formData.append('idBackImage', values.document.identityDocument.backImage);
       }
 
-      if (values.nuiDocument.file) {
-        formData.append('niuFile', values.nuiDocument.file);
+      if (values.document.nuiDocument.file) {
+        formData.append('niuFile', values.document.nuiDocument.file);
       }
 
       const response = await fetch("/api/kyc", {
@@ -139,7 +146,7 @@ export default function Home() {
       });
 
       const data = await response.json();
-      console.log("data", data);
+
       if (data.success) {
         toast.success(t("title"));
         console.log("Form submitted with ID:", data.id);
@@ -165,6 +172,7 @@ export default function Home() {
     setCustomers([]);          // vider la liste des résultats
     setSearchTerm("");         // si tu as un champ de recherche
 
+    form.clearErrors();
     form.reset(getDefaultFormValues()); // Réinitialiser les valeurs du formulaire
   };
 
@@ -242,7 +250,7 @@ export default function Home() {
                                 disabled={isSubmitting}
                                 className="ml-auto bg-[#14689E] hover:text-white hover:border-[#14689E] text-white"
                               >
-                                {isSubmitting ? t("kycForm.buttons.submitting") : t("kycForm.buttons.submit")}
+                                {isSubmitting ? <><Loader2 className="animate-spin h-4 w-4 mr-2" /> {t("kycForm.buttons.submitting")}</> : t("kycForm.buttons.submit")}
                               </Button>
                             )}
                           </div>

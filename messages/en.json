@@ -227,6 +227,7 @@
         },
         "errors": {
             "fillAll": "Please fill all required fields correctly",
+            "NotProvided": "Not provided",
             "required": "This field is required",
             "invalidName": "Name cannot contain special characters",
             "invalidPhone": "Invalid Cameroonian phone number. It must start with 2, 3, or 6 and be 9 digits long.",
@@ -267,6 +268,7 @@
                 "required": "NIU Document Number is required.",
                 "length": "NIU must have 14 characters.",
                 "format": "NIU Document Number must start with P or M, followed by 12 digits and end with a letter.",
+                "formatMoral": "NIU Document Number must start with M, followed by 12 digits and end with a letter.",
                 "fileRequired": "NIU Document File is required."
             },
             "phone": {

@@ -36,3 +36,6 @@ next-env.d.ts
 
 #file
 /writable/uploads/
+
+# prisma
+/prisma/dev.db

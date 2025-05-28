@@ -18,11 +18,13 @@ import { KYCFormFields } from "@/components/kyc-form-fields";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 
-import { createFormSchema, createStepFormSchema,  } from "@/schema/kycSchema";
-import { buildCustomerFormValues, Customer, getDefaultFormValues } from "@/helpers/kyc";
+import { createFormSchema, createStepFormSchema, } from "@/schema/kycSchema";
+import { buildCustomerFormValues, getDefaultFormValues } from "@/helpers/kyc";
 
 import { cn, fetchCustomer } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Customer } from "@/constants/types";
+import BackButton from "@/components/backButton";
 
 
 export default function Home() {
@@ -69,15 +71,20 @@ export default function Home() {
       setCustomers(data?.data || []);
     } catch (error) {
       setCustomers([]);
-      console.error("Erreur pendant la recherche :", error);
+      // TODO remove in PROD
+      // console.error("Erreur pendant la recherche :", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSelection = (customer: Customer): void => {
-    // Tu peux aussi pré-remplir le formulaire ici si nécessaire
+    // TODO remove in PROD
+    // console.log("customer", customer)
+    // Pré-remplir le formulaire ici
     const formValues = buildCustomerFormValues(customer);
+    // TODO remove in PROD
+    // console.log("formValues", formValues)
     form.reset(formValues);
     setCustomers([]);          // vider la liste des résultats
     setSearchTerm("");         // si tu as un champ de recherche
@@ -93,16 +100,19 @@ export default function Home() {
       try {
         if (currentStep === 3) {
           await currentSchema.parseAsync(formValues);
-          console.log(await currentSchema.parseAsync(formValues))
+          // TODO remove in PROD
+          // console.log(await currentSchema.parseAsync(formValues))
         } else {
           currentSchema.parse(formValues);
-          console.log(currentSchema.parse(formValues))
+          // TODO remove in PROD
+          // console.log(currentSchema.parse(formValues))
         }
         setCurrentStep((current) => current + 1);
       } catch (error) {
         await form.trigger(); // Déclencher la validation
         toast.error(t("kycForm.errors.fillAll"));
-        console.log("CurrentStep validation errors:", error)
+        // TODO remove in PROD
+        // console.log("CurrentStep validation errors:", error)
       }
     }
   };
@@ -149,7 +159,8 @@ export default function Home() {
 
       if (data.success) {
         toast.success(t("title"));
-        console.log("Form submitted with ID:", data.id);
+        // TODO remove in PROD
+        // console.log("Form submitted with ID:", data.id);
         setIsKYCComplete(true); // Afficher le composant de succès
         setShowConfetti(true); // Activer les confettis
         setTimeout(() => setShowConfetti(false), 4000); // Désactiver après 3 secondes
@@ -157,7 +168,8 @@ export default function Home() {
         throw new Error(data.message || "Failed to submit form");
       }
     } catch (error) {
-      console.error("Error submitting form:", error);
+      // TODO remove in PROD
+      // console.error("Error submitting form:", error);
       toast.error("Failed to submit form. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -209,7 +221,8 @@ export default function Home() {
                       <p className="form-description">
                         {t("kycForm.description")}
                       </p>
-                    </div><div className="form-card">
+                    </div>
+                    <div className="form-card">
                       <ProgressSteps steps={formSteps} currentStep={currentStep} />
 
                       <Form {...form}>
@@ -256,7 +269,9 @@ export default function Home() {
                           </div>
                         </form>
                       </Form>
-                    </div></>)
+                    </div>
+                    <BackButton />
+                  </>)
                   : (<div>
                     {!showSearchForm &&
                       <HomeCompoment
@@ -265,17 +280,21 @@ export default function Home() {
                         action2={setShowSearchForm}
                       />}
                     {showSearchForm &&
-                      <SearchComponent
-                        t={t}
-                        search={searchTerm}
-                        setSearch={setSearchTerm}
-                        handleSearch={handleSearch}
-                        isLoading={isLoading}
-                        error={error}
-                        results={customers}
-                        handleSelection={handleSelection}
-                      />
+                      <>
+                        <SearchComponent
+                          t={t}
+                          search={searchTerm}
+                          setSearch={setSearchTerm}
+                          handleSearch={handleSearch}
+                          isLoading={isLoading}
+                          error={error}
+                          results={customers}
+                          handleSelection={handleSelection}
+                        />
+                        <BackButton />
+                      </>
                     }
+
                   </div>
                   )}
             </>
@@ -391,6 +410,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ t, search, setSearch,
             </>
           )}
         </Button>
+
       </div>
       {error && <div className="bg-red-300 text-white rounded-sm p-2 text-sm flex items-center gap-2 mt-3 transition-all">
         <MessageCircleWarning /> <span>{error || "Something went wrong"} </span>

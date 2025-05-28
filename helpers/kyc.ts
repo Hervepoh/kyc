@@ -1,16 +1,4 @@
-
-
-type ContractStatus = "active" | "inactive";
-type CustomerStatus = "landlord" | "tenant" | "other";
-type UsageType = "residential" | "commercial";
-type MeterType = "postpaid" | "prepaid" | "smart";
-type MeterStatus = "active" | "inactive";
-
-export interface Customer {
-  contract: string;
-  fullName: string;
-  [key: string]: any; // For any additional properties
-}
+import { ContractStatus, Customer, CustomerStatus, MeterStatus, MeterType, UsageType } from "@/constants/types";
 
 
 export function getDefaultFormValues() {
@@ -75,7 +63,7 @@ export function buildCustomerFormValues(customer: Customer) {
   return {
     ...defaults,
     firstName: customer.fullName || "",
-    lastName: customer.fullName || "",
+    lastName: customer.lastName || "",
     contract: {
       ...defaults.contract,
       number: customer.contract || "",

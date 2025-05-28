@@ -30,6 +30,7 @@
       "review": "Vérification"
     },
     "buttons": {
+      "home": "Revenir à l'accueil",
       "previous": "Précédent",
       "next": "Suivant",
       "submit": "Soumettre le formulaire KYC",

@@ -173,9 +173,22 @@ model VerificationRequest {
 // }
 
 model Customer {
-  contract String @id
-  meter    String
-  fullName String
+  contract          String    @id
+  meter             String?
+  firstName         String?
+  lastName          String?
+  fullName          String
+  status            String?
+  type              String?
+  idType            String?
+  idNumber          String?
+  idValidityDate    DateTime?
+  nui               String?
+  phone             String?
+  email             String?
+  address           String?
+  locationReference String?
+  gpsCoordinates    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

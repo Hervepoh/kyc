@@ -4,6 +4,7 @@ import { TranslateFn } from "@/constants/types";
 import { createBaseSchemas } from "./base-schema";
 import { createDocumentSchema } from "./identity-schema";
 import { createContractSchema } from "./contract-schema";
+import { REGEX } from "./schema-utils";
 
 
 export const createFormSchema = (t: TranslateFn) => {
@@ -28,19 +29,19 @@ export const createFormSchema = (t: TranslateFn) => {
 
 export const createStepFormSchema = (t: TranslateFn) => {
   const { contractDetailsSchema, otherContractsDetailsSchema } = createContractSchema(t);
-  const { email, dateOfBirth, genderRequired, geolocalization, phoneNumbers } = createBaseSchemas(t);
+  const { firstName, lastName, email, dateOfBirth, genderRequired, geolocalization, phoneNumbers } = createBaseSchemas(t);
 
   const physicalSchema = z.object({
     isMoralEntity: z.literal(false),
-    firstName: z.string().nullable().optional(),
-    lastName: z.string().min(1, "Last name is required"),
+    firstName: firstName,
+    lastName: lastName, //z.string().min(1, "Last name is required"),
     gender: genderRequired,
     dateOfBirth: dateOfBirth,
   });
 
   const moralSchema = z.object({
     isMoralEntity: z.literal(true),
-    lastName: z.string().min(1, "Company name is required"),
+    lastName: z.string().regex(REGEX.name).min(1, "Company name is required"),
     dateOfBirth: z.date({
       required_error: "Date of birth is required",
       invalid_type_error: "Invalid date format",

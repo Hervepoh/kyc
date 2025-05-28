@@ -126,22 +126,36 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [identityDocumentType]);
 
+
+  useEffect(() => {
+    if (prevHasMeterDetails != hasMeterDetails) {
+      if (!hasMeterDetails) {
+        form.resetField("contract.meterDetails.number");
+        form.resetField("contract.meterDetails.status");
+        form.resetField("contract.meterDetails.characteristics");
+        form.resetField("contract.meterDetails.type");
+        form.resetField("contract.meterDetails.itineraryNumber");
+        form.resetField("contract.meterDetails.transformerPower");
+        form.resetField("contract.meterDetails.voltage");
+      }
+      setHasMeterDetails(hasMeterDetails);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasMeterDetails]);
+
+
   useEffect(() => {
     if (prevHasOtherContracts != hasOtherContracts) {
-      if (hasOtherContracts) {
-
-
-      } else {
-        form.resetField("otherContracts.numbers");
+      if (!hasOtherContracts) {
+        form.setValue("otherContracts.numbers", []);
+        // form.resetField("otherContracts.numbers");
         form.resetField("otherContracts.usageTypes");
         form.resetField("otherContracts.meterDetails");
       }
       setHasOtherContracts(hasOtherContracts);
     }
-
-    // form.setValue("dateOfBirth", null, { shouldValidate: false, shouldDirty: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMoralEntity]);
+  }, [hasOtherContracts]);
 
 
   const stepComponents = [
@@ -517,6 +531,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
                 value={field.value}
                 accept={{ 'image/*': ['.png', '.jpg', '.jpeg'], 'application/pdf': ['.pdf'] }}
                 label={t("fields.uploadNuiFile")}
+                truncate={false}
               />
             </FormControl>
             <FormMessage />

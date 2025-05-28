@@ -21,3 +21,19 @@ export interface IdentityDocumentSchema {
     number: z.ZodString;
     [key: string]: z.ZodTypeAny;
 }
+
+export interface Customer {
+  contract: string;
+  meter?: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  type?: string;
+  [key: string]: any; // For any additional properties
+}
+
+export type ContractStatus = "active" | "inactive";
+export type CustomerStatus = "landlord" | "tenant" | "other";
+export type UsageType = "residential" | "commercial";
+export type MeterType = "postpaid" | "prepaid" | "smart";
+export type MeterStatus = "active" | "inactive";

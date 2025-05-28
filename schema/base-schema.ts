@@ -3,6 +3,7 @@ import { REGEX, ENUMS } from "./schema-utils";
 import type { TranslateFn } from "@/constants/types";
 import { checkContractExists } from "@/lib/utils";
 
+
 export const createBaseSchemas = (t: TranslateFn) => {
     const phone = z.string()
         .regex(REGEX.phone, t("kycForm.errors.phone.invalid"));

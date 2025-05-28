@@ -30,7 +30,8 @@ export const fetchCustomer = async (query: string) => {
     const data = await res.json();
      return {data , message:""};
   } catch (error:any) {
-    console.error('Erreur lors de la recherche:', error);
+    // TODO remove in PROD
+    // console.error('Erreur lors de la recherche:', error);
     return { data: [], message: error.message || 'Erreur lors de la recherche:'};
     // afficher message d’erreur à l’utilisateur
   }

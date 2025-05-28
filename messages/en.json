@@ -30,6 +30,7 @@
             "review": "Review"
         },
         "buttons": {
+            "home": "Bach to home page",
             "previous": "Previous",
             "next": "Next",
             "submit": "Submit KYC Form",

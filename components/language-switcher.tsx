@@ -19,6 +19,7 @@ export function LanguageSwitcher() {
   }
 
   const toggleLocale: ToggleLocaleFunction = (locale) => {
+    // TODO remove in PROD
     console.log(locale);
   };
 

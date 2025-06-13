@@ -62,32 +62,25 @@ export default function Home() {
   const handleSearch = async () => {
     setIsLoading(true);
     try {
-      // Appel API ou filtre ici
       const { data, message } = await fetchCustomer(searchTerm);
       if (message) {
         setError(message);
-        setTimeout(() => setError(null), 4000); // Efface l'erreur après 3 secondes
+        setTimeout(() => setError(null), 4000);
       }
       setCustomers(data?.data || []);
     } catch (error) {
       setCustomers([]);
-      // TODO remove in PROD
-      // console.error("Erreur pendant la recherche :", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleSelection = (customer: Customer): void => {
-    // TODO remove in PROD
-    // console.log("customer", customer)
     // Pré-remplir le formulaire ici
     const formValues = buildCustomerFormValues(customer);
-    // TODO remove in PROD
-    // console.log("formValues", formValues)
     form.reset(formValues);
-    setCustomers([]);          // vider la liste des résultats
-    setSearchTerm("");         // si tu as un champ de recherche
+    setCustomers([]);          
+    setSearchTerm("");        
     setShowKycForm(true);
     setShowSearchForm(false);
   };
@@ -100,19 +93,13 @@ export default function Home() {
       try {
         if (currentStep === 3) {
           await currentSchema.parseAsync(formValues);
-          // TODO remove in PROD
-          // console.log(await currentSchema.parseAsync(formValues))
         } else {
           currentSchema.parse(formValues);
-          // TODO remove in PROD
-          // console.log(currentSchema.parse(formValues))
         }
         setCurrentStep((current) => current + 1);
       } catch (error) {
-        await form.trigger(); // Déclencher la validation
+        await form.trigger(); 
         toast.error(t("kycForm.errors.fillAll"));
-        // TODO remove in PROD
-        // console.log("CurrentStep validation errors:", error)
       }
     }
   };
@@ -199,7 +186,7 @@ export default function Home() {
           height={height}
           recycle={false} // Arrête de générer de nouveaux confettis après la fin
           numberOfPieces={1000} // Nombre de confettis
-          gravity={0.2} // Vitesse de chute
+          gravity={0.2} 
         />
       )}
 

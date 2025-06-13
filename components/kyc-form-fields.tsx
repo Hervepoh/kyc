@@ -38,7 +38,6 @@ interface KYCFormFieldsProps {
 export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
   const t = useTranslations("kycForm");
 
-
   const isMoralEntity = form.watch("isMoralEntity");
   const identityDocumentType = form.watch("document.type");
 
@@ -46,15 +45,15 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
   const [prevIsMoral, setPrevIsMoral] = useState(isMoralEntity);
 
   // Phone 
-  const phoneNumbers = form.watch("phoneNumbers") || [];
+  const phoneNumbers = form.watch("phoneNumbers") ?? [];
 
   const addPhoneNumber = React.useCallback(() => {
-    const currentPhones = form.getValues("phoneNumbers") || [];
+    const currentPhones = form.getValues("phoneNumbers") ?? [];
     form.setValue("phoneNumbers", [...currentPhones, { number: "", isWhatsapp: false }]);
   }, [form]);
 
   const removePhoneNumber = (index: number) => {
-    const currentPhones = form.getValues("phoneNumbers") || [];
+    const currentPhones = form.getValues("phoneNumbers") ?? [];
     if (currentPhones.length <= 1) {
       toast.error("At least one phone number is required");
       return;
@@ -67,18 +66,18 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
   // Meter 
   const hasMeterDetails = form.watch("contract.hasMeterDetails");
   const hasOtherContracts = form.watch("otherContracts.hasOtherContracts");
-  const otherContractNumbers = form.watch("otherContracts.numbers") || [];
+  const otherContractNumbers = form.watch("otherContracts.numbers") ?? [];
 
-  const [prevHasMeterDetails, setHasMeterDetails] = useState(hasMeterDetails);
-  const [prevHasOtherContracts, setHasOtherContracts] = useState(hasOtherContracts);
+  const [prevHasMeterDetails, setPrevHasMeterDetails] = useState(hasMeterDetails);
+  const [prevHasOtherContracts, setPrevHasOtherContracts] = useState(hasOtherContracts);
 
   const addContractNumber = React.useCallback(() => {
-    const currentNumbers = form.getValues("otherContracts.numbers") || [];
+    const currentNumbers = form.getValues("otherContracts.numbers") ?? [];
     form.setValue("otherContracts.numbers", [...currentNumbers, ""]);
   }, [form]);
 
   const removeContractNumber = React.useCallback((index: number) => {
-    const currentNumbers = form.getValues("otherContracts.numbers") || [];
+    const currentNumbers = form.getValues("otherContracts.numbers") ?? [];
     const newNumbers = [...currentNumbers];
     newNumbers.splice(index, 1);
     form.setValue("otherContracts.numbers", newNumbers);
@@ -109,7 +108,6 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
       if (identityDocumentType) {
         // Réinitialiser tous les autres champs
         form.setValue("document.identityDocument.number", "");
-        //form.setValue("document.identityDocument.postfix", { post: "", code: "" }, { shouldValidate: false, shouldDirty: false });
         form.resetField("document.identityDocument.postfix.post");
         form.resetField("document.identityDocument.postfix.code");
         form.setValue("document.identityDocument.validityDate", null, { shouldValidate: false, shouldDirty: false });
@@ -118,8 +116,6 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
         form.clearErrors("document.identityDocument.postfix");
         form.clearErrors("document.identityDocument.validityDate");
 
-        // form.resetField("document.identityDocument.frontImage");
-        // form.resetField("document.identityDocument.backImage", undefined);
         setPrevType(identityDocumentType);
       }
     }
@@ -138,7 +134,7 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
         form.resetField("contract.meterDetails.transformerPower");
         form.resetField("contract.meterDetails.voltage");
       }
-      setHasMeterDetails(hasMeterDetails);
+      setPrevHasMeterDetails(hasMeterDetails);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMeterDetails]);
@@ -148,11 +144,10 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
     if (prevHasOtherContracts != hasOtherContracts) {
       if (!hasOtherContracts) {
         form.setValue("otherContracts.numbers", []);
-        // form.resetField("otherContracts.numbers");
         form.resetField("otherContracts.usageTypes");
         form.resetField("otherContracts.meterDetails");
       }
-      setHasOtherContracts(hasOtherContracts);
+      setPrevHasOtherContracts(hasOtherContracts);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasOtherContracts]);
@@ -564,7 +559,10 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
         </div>
 
         {phoneNumbers.map((_: any, index: number) => (
-          <div key={index} className="flex flex-col justify-between gap-2 pt-4 px-4 pb-8 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
+          <div
+            key={index}
+            className="flex flex-col justify-between gap-2 pt-4 px-4 pb-8 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
             <FormLabel className="text-sm text-gray-600">Phone Number {index + 1}</FormLabel>
 
             <div className="flex">
@@ -721,7 +719,6 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
                     {...field}
                     onBlur={(e) => {
                       field.onBlur();
-                      // handleContractBlur(e);
                     }}
                   />
                 </FormControl>
@@ -810,9 +807,65 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
             <FormItem>
               <FormLabel>{t("fields.contract.activity.label")}</FormLabel>
               <FormControl>
-                <Input
+                {/* <Input
                   placeholder={t("fields.contract.activity.placeholder")}
-                  {...field} />
+                  {...field} /> */}
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("fields.contract.activity.placeholder")} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Dwelling House">{t("fields.contract.activity.dwelling_house")}</SelectItem>
+                    <SelectItem value="Breeding, Hunting, Trapping">{t("fields.contract.activity.breeding_hunting_trapping")}</SelectItem>
+                    <SelectItem value="Sylviculture and Forestry Development">{t("fields.contract.activity.sylviculture_and_forestry_development")}</SelectItem>
+                    <SelectItem value="Work of Grain">{t("fields.contract.activity.work_of_grain")}</SelectItem>
+                    <SelectItem value="Manufacture but Agricultural Products">{t("fields.contract.activity.manufacture_but_agricultural_products")}</SelectItem>
+                    <SelectItem value="Oilseeds and Feeding Stuffs Industry">{t("fields.contract.activity.oilseeds_and_feeding_stuffs_industry")}</SelectItem>
+                    <SelectItem value="Manufacture of Cereal Products">{t("fields.contract.activity.manufacture_of_cereal_products")}</SelectItem>
+                    <SelectItem value="Milk, Fruits and Other Foodstuffs Industry">{t("fields.contract.activity.milk_fruits_and_other_foodstuffs_industry")}</SelectItem>
+                    <SelectItem value="Drinks industry">{t("fields.contract.activity.drinks_industry")}</SelectItem>
+                    <SelectItem value="Industry of Tobacco">{t("fields.contract.activity.industry_of_tobaco")}</SelectItem>
+                    <SelectItem value="Textile and the Sewing Industry">{t("fields.contract.activity.textile_and_the_sewing_industry")}</SelectItem>
+                    <SelectItem value="Shoes and Leather Industry">{t("fields.contract.activity.shoes_and_leather_industry")}</SelectItem>
+                    <SelectItem value="Wood Industry Except Furniture Manufactures">{t("fields.contract.activity.wood_industry_except_furniture_manufactures")}</SelectItem>
+                    <SelectItem value="Manufacture of Paper and Paper Articles">{t("fields.contract.activity.manufacture_of_paper_and_paper_articles")}</SelectItem>
+                    <SelectItem value="Oil Refining, Coking and Transformation">{t("fields.contract.activity.oil_refining_coking_and_transformation")}</SelectItem>
+                    <SelectItem value="Chemical Industry">{t("fields.contract.activity.chemical_industry")}</SelectItem>
+                    <SelectItem value="Rubber Industry">{t("fields.contract.activity.rubber_industry")}</SelectItem>
+                    <SelectItem value="Manufacture of other nonmetal mineral products">{t("fields.contract.activity.manufacture_of_other_nonmetal_mineral_products")}</SelectItem>
+                    <SelectItem value="Manufacture of Mechanical equipments">{t("fields.contract.activity.manufacture_of_mechanical_equipments")}</SelectItem>
+                    <SelectItem value="Manufacture of machines, electrical appliances">{t("fields.contract.activity.manufacture_of_machines_electrical_appliances")}</SelectItem>
+                    <SelectItem value="Clock Industry">{t("fields.contract.activity.clock_industry")}</SelectItem>
+                    <SelectItem value="Manufacture of Transport Equipments">{t("fields.contract.activity.manufacture_of_transport_equipments")}</SelectItem>
+                    <SelectItem value="Manufacture of Furniture, NCA Manufacture activity">{t("fields.contract.activity.manufacture_of_furniture_nca_manufacture_activity")}</SelectItem>
+                    <SelectItem value="Generation and Distribution of Water and Gas">{t("fields.contract.activity.generation_and_distribution_of_water_and_gas")}</SelectItem>
+                    <SelectItem value="Building and Public Works">{t("fields.contract.activity.building_and_public_works")}</SelectItem>
+                    <SelectItem value="Wholesale and Retail">{t("fields.contract.activity.wholesale_and_retail")}</SelectItem>
+                    <SelectItem value="Repairs Activity">{t("fields.contract.activity.repairs_activity")}</SelectItem>
+                    <SelectItem value="Restaurants and Hotels">{t("fields.contract.activity.restaurants_and_hotels")}</SelectItem>
+                    <SelectItem value="Transport, Warehouses and Communication">{t("fields.contract.activity.transport_warehouses_and_communication")}</SelectItem>
+                    <SelectItem value="Posts and Telecommunications">{t("fields.contract.activity.posts_and_telecommunications")}</SelectItem>
+                    <SelectItem value="Financial Intermediation and Activities">{t("fields.contract.activity.financial_intermediation_and_activities")}</SelectItem>
+                    <SelectItem value="Rent Activities">{t("fields.contract.activity.rent_activities")}</SelectItem>
+                    <SelectItem value="Services Activities to Companies">{t("fields.contract.activity.services_activities_to_companies")}</SelectItem>
+                    <SelectItem value="Social Security">{t("fields.contract.activity.social_security")}</SelectItem>
+                    <SelectItem value="Education">{t("fields.contract.activity.education")}</SelectItem>
+                    <SelectItem value="Social Health and Action">{t("fields.contract.activity.social_health_and_action")}</SelectItem>
+                    <SelectItem value="Other Activities Provided to the Community">{t("fields.contract.activity.other_activities_provided_to_the_community")}</SelectItem>
+                    <SelectItem value="International Organizations">{t("fields.contract.activity.international_organizations")}</SelectItem>
+                    <SelectItem value="Mixed Activities">{t("fields.contract.activity.mixed_activities")}</SelectItem>
+                    <SelectItem value="Presidency and Attached Services, Administration">{t("fields.contract.activity.presidency_and_attached_services_administration")}</SelectItem>
+                    <SelectItem value="Communities Offices">{t("fields.contract.activity.communities_offices")}</SelectItem>
+                    <SelectItem value="Street Lighting">{t("fields.contract.activity.street_lighting")}</SelectItem>
+                    <SelectItem value="Aes Sonel Services">{t("fields.contract.activity.aes_sonel_services")}</SelectItem>
+                    <SelectItem value="SNEC Services">{t("fields.contract.activity.snec_services")}</SelectItem>
+                    <SelectItem value="Utilities Companies - Preferential Mode">{t("fields.contract.activity.utilities_companies_preferential_mode")}</SelectItem>
+                    <SelectItem value="Utilities Companies - Free Mode">{t("fields.contract.activity.utilities_companies_free_mode")}</SelectItem>
+                    <SelectItem value="Other">{t("fields.contract.activity.other")}</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -1024,7 +1077,6 @@ export const KYCFormFields = ({ form, currentStep }: KYCFormFieldsProps) => {
                             {...field}
                             onBlur={(e) => {
                               field.onBlur();
-                              //handleContractBlur(e, `otherContracts.numbers.${index}`);
                             }}
                           />
                         </FormControl>
